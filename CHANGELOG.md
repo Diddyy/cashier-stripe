@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v15.3.2...15.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v15.3.2...16.x)
 
 ## [v15.3.2](https://github.com/laravel/cashier/compare/v15.3.1...v15.3.2) - 2024-04-12
 
