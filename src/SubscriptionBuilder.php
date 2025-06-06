@@ -100,6 +100,17 @@ class SubscriptionBuilder
             $this->price($price);
         }
     }
+    
+    /**
+     * Get the Stripe SDK client.
+     *
+     * @param  array  $options
+     * @return \Stripe\StripeClient
+     */
+    public static function stripe(array $options = [])
+    {
+        return Cashier::stripe($options);
+    }
 
     /**
      * Set a price on the subscription builder.

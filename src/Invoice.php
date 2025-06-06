@@ -303,15 +303,23 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function discounts()
     {
-        if (! is_null($this->discounts)) {
+        if ($this->discounts !== null) {
             return $this->discounts;
         }
 
-        $this->refreshWithExpandedData();
+        $discounts = $this->invoice->discounts ?? [];
 
-        return Collection::make($this->invoice->discounts)
-            ->mapInto(Discount::class)
-            ->all();
+        // Expand discounts if not expanded (string IDs)
+        if (isset($discounts[0]) && is_string($discounts[0])) {
+            $this->refresh(['discounts']);
+            $discounts = $this->invoice->discounts ?? [];
+        }
+
+        $this->discounts = collect($discounts)->map(function ($discount) {
+            return new Discount($discount);
+        })->all();
+
+        return $this->discounts;
     }
 
     /**
@@ -403,23 +411,18 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function taxes()
     {
-        if (! is_null($this->taxes)) {
+        if ($this->taxes !== null) {
             return $this->taxes;
         }
 
-        $this->refreshWithExpandedData();
-
-        return $this->taxes = Collection::make($this->invoice->total_taxes)
-            ->sortByDesc('inclusive')
-            ->map(function (object $tax) {
-                if ($tax->type === 'tax_rate_details') {
-                    $taxRate = $this->getTaxRate($tax->tax_rate_details);
-                    return new Tax($tax->amount, $this->invoice->currency, $taxRate);
-                }
-                // Handle other tax types if needed in the future
-                return new Tax($tax->amount, $this->invoice->currency, null);
-            })
-            ->all();
+        $this->taxes = collect($this->invoice->total_taxes ?? [])->map(function ($tax) {
+            if (isset($tax->type) && $tax->type === 'tax_rate_details') {
+                $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                return new Tax($tax->amount, $this->invoice->currency, $taxRate);
+            }
+            return new Tax($tax->amount, $this->invoice->currency, null);
+        })->all();
+        return $this->taxes;
     }
 
     /**
@@ -503,31 +506,16 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function invoiceLineItems()
     {
-        if (! is_null($this->items)) {
+        if ($this->items !== null) {
             return $this->items;
         }
 
-        $this->refreshWithExpandedData();
+        $lines = $this->invoice->lines->data ?? [];
+        $this->items = collect($lines)->map(function ($line) {
+            return new InvoiceLineItem($this, $line);
+        })->all();
 
-        $page = $this->invoice->lines;
-
-        $items = Collection::make();
-
-        while (true) {
-            foreach ($page as $item) {
-                $items->push(new InvoiceLineItem($this, $item));
-            }
-
-            $page = $page->nextPage([
-                'expand' => ['data.taxes.tax_rate_details'],
-            ]);
-
-            if ($page->isEmpty()) {
-                break;
-            }
-        }
-
-        return $this->items = $items->reverse()->all();
+        return $this->items;
     }
 
     /**
@@ -661,8 +649,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function accountTaxIds()
     {
-        $this->refreshWithExpandedData();
-
         return $this->invoice->account_tax_ids ?? [];
     }
 
