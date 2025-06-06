@@ -795,14 +795,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             return collect($this->payments);
         }
 
-        // Ensure expanded payments data is loaded
-        $this->refreshWithExpandedData();
-
-        $payments = $this->invoice->payments->data ?? [];
-
-        return collect($payments)->map(function ($payment) {
-            return new InvoicePayment($payment);
-        });
+        // Retrieve invoice payments via the API, allowing users to expand or filter via list params
+        return $this->owner->invoicePaymentsForInvoice($this->invoice->id);
     }
 
     /**
