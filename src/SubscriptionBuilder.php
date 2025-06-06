@@ -14,6 +14,8 @@ use Laravel\Cashier\Concerns\HandlesPaymentFailures;
 use Laravel\Cashier\Concerns\HandlesTaxes;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
+use Laravel\Cashier\Coupon;
+use Laravel\Cashier\Exceptions\InvalidCoupon;
 use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionBuilder
@@ -66,6 +68,13 @@ class SubscriptionBuilder
      * @var int|null
      */
     protected $billingCycleAnchor = null;
+
+    /**
+     * The billing thresholds for the subscription.
+     *
+     * @var array|null
+     */
+    protected $billingThresholds = null;
 
     /**
      * The metadata to apply to the subscription.
@@ -204,6 +213,19 @@ class SubscriptionBuilder
         }
 
         $this->billingCycleAnchor = $date;
+
+        return $this;
+    }
+
+    /**
+     * Set billing thresholds for the subscription.
+     *
+     * @param  array  $thresholds
+     * @return $this
+     */
+    public function withBillingThresholds(array $thresholds)
+    {
+        $this->billingThresholds = $thresholds;
 
         return $this;
     }
@@ -400,16 +422,32 @@ class SubscriptionBuilder
         $payload = array_filter([
             'automatic_tax' => $this->automaticTaxPayload(),
             'billing_cycle_anchor' => $this->billingCycleAnchor,
-            'coupon' => $this->couponId,
-            'expand' => ['latest_invoice.payment_intent'],
+            'billing_thresholds' => $this->billingThresholds,
+            'expand' => ['latest_invoice.confirmation_secret'],
             'metadata' => $this->metadata,
             'items' => Collection::make($this->items)->values()->all(),
             'payment_behavior' => $this->paymentBehavior(),
-            'promotion_code' => $this->promotionCodeId,
             'proration_behavior' => $this->prorateBehavior(),
             'trial_end' => $this->getTrialEndForPayload(),
             'off_session' => true,
         ]);
+
+        // Apply discounts using new discounts array (supports multiple discounts)
+        if ($this->couponId || $this->promotionCodeId) {
+            $discounts = [];
+            
+            if ($this->couponId) {
+                // Validate the coupon before applying
+                $this->validateCouponForSubscriptionApplication($this->couponId);
+                $discounts[] = ['coupon' => $this->couponId];
+            }
+            
+            if ($this->promotionCodeId) {
+                $discounts[] = ['promotion_code' => $this->promotionCodeId];
+            }
+            
+            $payload['discounts'] = $discounts;
+        }
 
         if ($taxRates = $this->getTaxRatesForPayload()) {
             $payload['default_tax_rates'] = $taxRates;
@@ -467,5 +505,24 @@ class SubscriptionBuilder
     public function getItems()
     {
         return $this->items;
+    }
+
+    /**
+     * Validate that a coupon can be applied to a subscription.
+     *
+     * @param  string  $couponId
+     * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    protected function validateCouponForSubscriptionApplication($couponId)
+    {
+        $stripeCoupon = $this->owner::stripe()->coupons->retrieve($couponId);
+        $coupon = new Coupon($stripeCoupon);
+
+        if ($coupon->isForeverAmountOff()) {
+            throw InvalidCoupon::cannotApplyForeverAmountOffToSubscription($couponId);
+        }
     }
 }

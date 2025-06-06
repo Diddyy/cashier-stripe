@@ -2,6 +2,9 @@
 
 namespace Laravel\Cashier\Concerns;
 
+use Laravel\Cashier\Coupon;
+use Laravel\Cashier\Exceptions\InvalidCoupon;
+
 trait AllowsCoupons
 {
     /**
@@ -67,15 +70,41 @@ trait AllowsCoupons
      * Return the discounts for a Stripe Checkout session.
      *
      * @return array[]|null
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
      */
     protected function checkoutDiscounts()
     {
+        $discounts = [];
+
         if ($this->couponId) {
-            return [['coupon' => $this->couponId]];
+            $this->validateCouponForCheckout($this->couponId);
+            $discounts[] = ['coupon' => $this->couponId];
         }
 
         if ($this->promotionCodeId) {
-            return [['promotion_code' => $this->promotionCodeId]];
+            $discounts[] = ['promotion_code' => $this->promotionCodeId];
+        }
+
+        return !empty($discounts) ? $discounts : null;
+    }
+
+    /**
+     * Validate that a coupon can be used in checkout sessions.
+     *
+     * @param  string  $couponId
+     * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    protected function validateCouponForCheckout($couponId)
+    {
+        $stripeCoupon = static::stripe()->coupons->retrieve($couponId);
+        $coupon = new Coupon($stripeCoupon);
+
+        if ($coupon->isForeverAmountOff()) {
+            throw InvalidCoupon::cannotUseForeverAmountOffInCheckout($couponId);
         }
     }
 }

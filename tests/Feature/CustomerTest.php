@@ -90,20 +90,54 @@ class CustomerTest extends FeatureTestCase
 
     public function test_customers_can_generate_a_billing_portal_url()
     {
+        // Create a billing portal configuration for test mode
+        $portalConfiguration = self::stripe()->billingPortal->configurations->create([
+            'business_profile' => [
+                'headline' => 'Manage your billing',
+            ],
+            'features' => [
+                'customer_update' => [
+                    'allowed_updates' => ['email', 'address'],
+                    'enabled' => true,
+                ],
+                'invoice_history' => ['enabled' => true],
+                'payment_method_update' => ['enabled' => true],
+            ],
+        ]);
+
         $user = $this->createCustomer('customers_can_generate_a_billing_portal_url');
         $user->createAsStripeCustomer();
 
-        $url = $user->billingPortalUrl('https://example.com');
+        $url = $user->billingPortalUrl('https://example.com', [
+            'configuration' => $portalConfiguration->id,
+        ]);
 
         $this->assertStringStartsWith('https://billing.stripe.com/', $url);
     }
 
     public function test_customers_can_be_redirected_to_their_billing_portal()
     {
+        // Create a billing portal configuration for test mode
+        $portalConfiguration = self::stripe()->billingPortal->configurations->create([
+            'business_profile' => [
+                'headline' => 'Manage your billing',
+            ],
+            'features' => [
+                'customer_update' => [
+                    'allowed_updates' => ['email', 'address'],
+                    'enabled' => true,
+                ],
+                'invoice_history' => ['enabled' => true],
+                'payment_method_update' => ['enabled' => true],
+            ],
+        ]);
+
         $user = $this->createCustomer('customers_can_be_redirected_to_their_billing_portal');
         $user->createAsStripeCustomer();
 
-        $response = $user->redirectToBillingPortal('https://example.com');
+        $response = $user->redirectToBillingPortal('https://example.com', [
+            'configuration' => $portalConfiguration->id,
+        ]);
 
         $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertStringStartsWith('https://billing.stripe.com/', $response->getTargetUrl());

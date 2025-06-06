@@ -83,12 +83,15 @@ class DiscountTest extends FeatureTestCase
     {
         $user = $this->createCustomer('applying_coupons_to_existing_customers');
 
+        // Create main subscription (will be the primary/default)
         $user->newSubscription('main', static::$priceId)->create('pm_card_visa');
 
+        // Apply coupon to primary subscription only (default behavior)
         $user->applyCoupon(static::$couponId);
 
         $this->assertEquals(static::$couponId, $user->discount()->coupon()->id);
 
+        // Apply promotion code to primary subscription only (default behavior)
         $user->applyPromotionCode(static::$promotionCodeId);
 
         $this->assertEquals(static::$secondCouponId, $user->discount()->coupon()->id);
@@ -97,16 +100,67 @@ class DiscountTest extends FeatureTestCase
         $this->assertEquals(static::$promotionCodeCode, $user->discount()->promotionCode()->code);
     }
 
-    public function test_applying_discounts_to_existing_subscriptions()
+    public function test_applying_discounts_to_specific_subscription_types()
     {
-        $user = $this->createCustomer('applying_coupons_to_existing_subscriptions');
+        $user = $this->createCustomer('applying_coupons_to_specific_subscriptions');
 
+        // Create multiple subscription types
+        $mainSubscription = $user->newSubscription('main', static::$priceId)->create('pm_card_visa');
+        $premiumSubscription = $user->newSubscription('premium', static::$priceId)->create('pm_card_visa');
+
+        // Apply coupon to specific subscription type
+        $user->applyCoupon(static::$couponId, 'premium');
+
+        // Main subscription should not have discount
+        $this->assertNull($mainSubscription->fresh()->discount());
+        
+        // Premium subscription should have discount
+        $this->assertEquals(static::$couponId, $premiumSubscription->fresh()->discount()->coupon()->id);
+
+        // Apply promotion code to multiple specific subscription types
+        $user->applyPromotionCode(static::$promotionCodeId, ['main', 'premium']);
+
+        // Both subscriptions should now have the promotion code
+        $this->assertEquals(static::$secondCouponId, $mainSubscription->fresh()->discount()->coupon()->id);
+        $this->assertEquals(static::$secondCouponId, $premiumSubscription->fresh()->discount()->coupon()->id);
+    }
+
+    public function test_applying_discounts_to_all_subscriptions()
+    {
+        $user = $this->createCustomer('applying_coupons_to_all_subscriptions');
+
+        // Create multiple subscription types
+        $mainSubscription = $user->newSubscription('main', static::$priceId)->create('pm_card_visa');
+        $premiumSubscription = $user->newSubscription('premium', static::$priceId)->create('pm_card_visa');
+
+        // Apply coupon to all subscriptions using explicit method
+        $user->applyCouponToAllSubscriptions(static::$couponId);
+
+        // Both subscriptions should have the discount
+        $this->assertEquals(static::$couponId, $mainSubscription->fresh()->discount()->coupon()->id);
+        $this->assertEquals(static::$couponId, $premiumSubscription->fresh()->discount()->coupon()->id);
+
+        // Apply promotion code to all subscriptions using wildcard
+        $user->applyPromotionCode(static::$promotionCodeId, '*');
+
+        // Both subscriptions should now have the promotion code
+        $this->assertEquals(static::$secondCouponId, $mainSubscription->fresh()->discount()->coupon()->id);
+        $this->assertEquals(static::$secondCouponId, $premiumSubscription->fresh()->discount()->coupon()->id);
+    }
+
+    public function test_applying_discounts_directly_to_subscriptions()
+    {
+        $user = $this->createCustomer('applying_coupons_to_subscription_directly');
+
+        // Create subscription
         $subscription = $user->newSubscription('main', static::$priceId)->create('pm_card_visa');
 
+        // Apply coupon directly to subscription (existing method)
         $subscription->applyCoupon(static::$couponId);
 
         $this->assertEquals(static::$couponId, $subscription->discount()->coupon()->id);
 
+        // Apply promotion code directly to subscription (existing method)
         $subscription->applyPromotionCode(static::$promotionCodeId);
 
         $this->assertEquals(static::$secondCouponId, $subscription->discount()->coupon()->id);

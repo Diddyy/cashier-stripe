@@ -5,9 +5,11 @@ namespace Laravel\Cashier\Concerns;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Laravel\Cashier\Cashier;
+use Laravel\Cashier\Coupon;
 use Laravel\Cashier\CustomerBalanceTransaction;
 use Laravel\Cashier\Discount;
 use Laravel\Cashier\Exceptions\CustomerAlreadyCreated;
+use Laravel\Cashier\Exceptions\InvalidCoupon;
 use Laravel\Cashier\Exceptions\InvalidCustomer;
 use Laravel\Cashier\PromotionCode;
 use Stripe\Customer as StripeCustomer;
@@ -261,47 +263,159 @@ trait ManagesCustomer
     }
 
     /**
-     * The discount that applies to the customer, if applicable.
+     * The discount that applies to the customer's primary subscription, if applicable.
      *
      * @return \Laravel\Cashier\Discount|null
      */
     public function discount()
     {
-        $customer = $this->asStripeCustomer(['discount.promotion_code']);
+        // Since customer-level discounts are no longer supported, check any active subscription
+        // Try default subscription first, then any active subscription
+        $subscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
+        
+        if (!$subscription) {
+            return null;
+        }
 
-        return $customer->discount
-            ? new Discount($customer->discount)
-            : null;
+        // Use the same expansion logic as the subscription's discount method
+        $stripeSubscription = $subscription->asStripeSubscription(['discounts.promotion_code']);
+
+        if (isset($stripeSubscription->discounts) && !empty($stripeSubscription->discounts)) {
+            return new Discount($stripeSubscription->discounts[0]);
+        }
+
+        return null;
     }
 
     /**
-     * Apply a coupon to the customer.
+     * Get all discounts that apply to the customer's subscriptions.
+     *
+     * @return \Illuminate\Support\Collection|\Laravel\Cashier\Discount[]
+     */
+    public function discounts()
+    {
+        // Since customer-level discounts are no longer supported, collect discounts from all subscriptions
+        return $this->subscriptions()->map(function ($subscription) {
+            return $subscription->discounts();
+        })->flatten();
+    }
+
+    /**
+     * Apply a coupon to the customer's subscriptions.
+     * By default, applies to the primary subscription only for safety.
      *
      * @param  string  $coupon
+     * @param  string|array|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
      * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
      */
-    public function applyCoupon($coupon)
+    public function applyCoupon($coupon, $subscriptionTypes = null)
     {
         $this->assertCustomerExists();
 
-        $this->updateStripeCustomer([
-            'coupon' => $coupon,
-        ]);
+        // Validate the coupon to ensure it's not a forever amount_off coupon
+        $this->validateCouponForCustomerApplication($coupon);
+
+        $subscriptions = $this->getTargetSubscriptions($subscriptionTypes);
+
+        foreach ($subscriptions as $subscription) {
+            // Skip validation since we already validated above for customer application
+            $subscription->updateStripeSubscription([
+                'discounts' => [['coupon' => $coupon]],
+            ]);
+        }
     }
 
     /**
-     * Apply a promotion code to the customer.
+     * Apply a promotion code to the customer's subscriptions.
+     * By default, applies to the primary subscription only for safety.
+     *
+     * @param  string  $promotionCodeId
+     * @param  string|array|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
+     * @return void
+     */
+    public function applyPromotionCode($promotionCodeId, $subscriptionTypes = null)
+    {
+        $this->assertCustomerExists();
+
+        $subscriptions = $this->getTargetSubscriptions($subscriptionTypes);
+
+        foreach ($subscriptions as $subscription) {
+            $subscription->updateStripeSubscription([
+                'discounts' => [['promotion_code' => $promotionCodeId]],
+            ]);
+        }
+    }
+
+    /**
+     * Apply a coupon to all active subscriptions.
+     * Explicit method for when you want to apply to all subscriptions.
+     *
+     * @param  string  $coupon
+     * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
+     */
+    public function applyCouponToAllSubscriptions($coupon)
+    {
+        return $this->applyCoupon($coupon, '*');
+    }
+
+    /**
+     * Apply a promotion code to all active subscriptions.
+     * Explicit method for when you want to apply to all subscriptions.
      *
      * @param  string  $promotionCodeId
      * @return void
      */
-    public function applyPromotionCode($promotionCodeId)
+    public function applyPromotionCodeToAllSubscriptions($promotionCodeId)
     {
-        $this->assertCustomerExists();
+        return $this->applyPromotionCode($promotionCodeId, '*');
+    }
 
-        $this->updateStripeCustomer([
-            'promotion_code' => $promotionCodeId,
-        ]);
+    /**
+     * Get the target subscriptions based on the provided criteria.
+     *
+     * @param  string|array|null  $subscriptionTypes
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getTargetSubscriptions($subscriptionTypes = null)
+    {
+        // If null, target the primary subscription only (safest default)
+        if ($subscriptionTypes === null) {
+            // Try default subscription first, then fall back to the first active subscription
+            $primarySubscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
+            return $primarySubscription ? collect([$primarySubscription]) : collect([]);
+        }
+
+        // If '*', target all active subscriptions
+        if ($subscriptionTypes === '*') {
+            return $this->subscriptions->where('stripe_status', 'active');
+        }
+
+        // If specific types provided, target those
+        $types = is_array($subscriptionTypes) ? $subscriptionTypes : [$subscriptionTypes];
+        return $this->subscriptions->whereIn('type', $types)->where('stripe_status', 'active');
+    }
+
+    /**
+     * Validate that a coupon can be applied to a customer.
+     *
+     * @param  string  $couponId
+     * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    protected function validateCouponForCustomerApplication($couponId)
+    {
+        $stripeCoupon = static::stripe()->coupons->retrieve($couponId);
+        $coupon = new Coupon($stripeCoupon);
+
+        if ($coupon->isForeverAmountOff()) {
+            throw InvalidCoupon::foreverAmountOffCouponNotAllowed($couponId);
+        }
     }
 
     /**

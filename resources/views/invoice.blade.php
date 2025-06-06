@@ -53,7 +53,7 @@
                 <span style="font-size: 28px;">
                     Invoice
 
-                    @if ($invoice->paid)
+                    @if ($invoice->isPaid())
                         <span style="color: #0c0; font-size: 20px;">(Paid)</span>
                     @endif
                 </span>

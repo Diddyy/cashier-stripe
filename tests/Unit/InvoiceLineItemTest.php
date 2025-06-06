@@ -27,10 +27,10 @@ class InvoiceLineItemTest extends TestCase
         $invoice = new Invoice($customer, $stripeInvoice);
 
         $stripeInvoiceLineItem = new StripeInvoiceLineItem();
-        $stripeInvoiceLineItem->tax_amounts = [
-            ['inclusive' => true, 'tax_rate' => $this->inclusiveTaxRate(5.24)],
-            ['inclusive' => true, 'tax_rate' => $this->inclusiveTaxRate(15.92)],
-            ['inclusive' => false, 'tax_rate' => $this->exclusiveTaxRate(21.12)],
+        $stripeInvoiceLineItem->taxes = [
+            $this->createTaxObject(100, $this->inclusiveTaxRate(5.24)),
+            $this->createTaxObject(200, $this->inclusiveTaxRate(15.92)),
+            $this->createTaxObject(300, $this->exclusiveTaxRate(21.12)),
         ];
 
         $item = new InvoiceLineItem($invoice, $stripeInvoiceLineItem);
@@ -52,10 +52,10 @@ class InvoiceLineItemTest extends TestCase
         $invoice = new Invoice($customer, $stripeInvoice);
 
         $stripeInvoiceLineItem = new StripeInvoiceLineItem();
-        $stripeInvoiceLineItem->tax_amounts = [
-            ['inclusive' => true, 'tax_rate' => $this->inclusiveTaxRate(5.54)],
-            ['inclusive' => false, 'tax_rate' => $this->exclusiveTaxRate(15.28)],
-            ['inclusive' => false, 'tax_rate' => $this->exclusiveTaxRate(21.85)],
+        $stripeInvoiceLineItem->taxes = [
+            $this->createTaxObject(100, $this->inclusiveTaxRate(5.54)),
+            $this->createTaxObject(200, $this->exclusiveTaxRate(15.28)),
+            $this->createTaxObject(300, $this->exclusiveTaxRate(21.85)),
         ];
 
         $item = new InvoiceLineItem($invoice, $stripeInvoiceLineItem);
@@ -63,6 +63,24 @@ class InvoiceLineItemTest extends TestCase
         $result = $item->exclusiveTaxPercentage();
 
         $this->assertSame(37.13, $result);
+    }
+
+    /**
+     * Create a tax object in the new structure.
+     *
+     * @param  int  $amount
+     * @param  \Stripe\TaxRate  $taxRate
+     * @return object
+     */
+    protected function createTaxObject($amount, StripeTaxRate $taxRate)
+    {
+        return (object) [
+            'type' => 'tax_rate_details',
+            'amount' => $amount,
+            'tax_rate_details' => (object) [
+                'tax_rate' => $taxRate,
+            ],
+        ];
     }
 
     /**
@@ -96,10 +114,12 @@ class InvoiceLineItemTest extends TestCase
      */
     protected function taxRate($percentage, $inclusive = true)
     {
-        $inclusiveTaxRate = new StripeTaxRate;
-        $inclusiveTaxRate->inclusive = $inclusive;
-        $inclusiveTaxRate->percentage = $percentage;
-
-        return $inclusiveTaxRate;
+        return StripeTaxRate::constructFrom([
+            'id' => 'txr_test_' . uniqid(),
+            'inclusive' => $inclusive,
+            'percentage' => $percentage,
+            'display_name' => 'Test Tax',
+            'object' => 'tax_rate',
+        ]);
     }
 }

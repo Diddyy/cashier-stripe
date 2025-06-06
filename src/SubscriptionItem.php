@@ -2,6 +2,7 @@
 
 namespace Laravel\Cashier;
 
+use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -207,16 +208,37 @@ class SubscriptionItem extends Model
      *
      * @param  int  $quantity
      * @param  \DateTimeInterface|int|null  $timestamp
-     * @return \Stripe\UsageRecord
+     * @return \Stripe\V2\Billing\MeterEvent
      */
     public function reportUsage($quantity = 1, $timestamp = null)
     {
-        $timestamp = $timestamp instanceof DateTimeInterface ? $timestamp->getTimestamp() : $timestamp;
+        // Get the price to determine the meter
+        $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
+        
+        if (!isset($stripePrice->recurring->meter)) {
+            throw new \InvalidArgumentException('Price must have a meter to report usage. Legacy usage records are no longer supported.');
+        }
+        
+        // Get the meter to get the event name
+        $meter = $this->subscription->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
+        
+        // Convert timestamp to RFC 3339 format for v2 API
+        if ($timestamp instanceof DateTimeInterface) {
+            $rfc3339Timestamp = $timestamp->format('c');
+        } elseif (is_int($timestamp)) {
+            $rfc3339Timestamp = (new \DateTime('@' . $timestamp))->format('c');
+        } else {
+            $rfc3339Timestamp = (new \DateTime())->format('c');
+        }
 
-        return $this->subscription->owner->stripe()->subscriptionItems->createUsageRecord($this->stripe_id, [
-            'quantity' => $quantity,
-            'action' => $timestamp ? 'set' : 'increment',
-            'timestamp' => $timestamp ?? time(),
+        return $this->subscription->owner->stripe()->v2->billing->meterEvents->create([
+            'event_name' => $meter->event_name,
+            'payload' => [
+                'stripe_customer_id' => $this->subscription->owner->stripeId(),
+                'value' => (string) $quantity,
+            ],
+            'timestamp' => $rfc3339Timestamp,
+            'identifier' => uniqid('cashier_', true),
         ]);
     }
 
@@ -228,9 +250,82 @@ class SubscriptionItem extends Model
      */
     public function usageRecords($options = [])
     {
-        return new Collection($this->subscription->owner->stripe()->subscriptionItems->allUsageRecordSummaries(
-            $this->stripe_id, $options
+        // Get the price to determine the meter
+        $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
+        
+        if (!isset($stripePrice->recurring->meter)) {
+            throw new \InvalidArgumentException('Price must have a meter to get usage records. Legacy usage records are no longer supported.');
+        }
+
+        // Default time range - current billing period
+        $defaultOptions = [
+            'start_time' => $this->currentPeriodStart()?->getTimestamp() ?? 1,
+            'end_time' => time(),
+            'customer' => $this->subscription->owner->stripeId(),
+        ];
+
+        return new Collection($this->subscription->owner->stripe()->billing->meters->allEventSummaries(
+            $stripePrice->recurring->meter,
+            array_merge($defaultOptions, $options)
         )->data);
+    }
+
+    /**
+     * Get the current period start date for this subscription item.
+     *
+     * @param  string|null  $timezone
+     * @return \Carbon\Carbon|null
+     */
+    public function currentPeriodStart($timezone = null)
+    {
+        $stripeItem = $this->asStripeSubscriptionItem();
+        
+        if (! isset($stripeItem->current_period_start)) {
+            return null;
+        }
+
+        $date = Carbon::createFromTimestamp($stripeItem->current_period_start);
+
+        return $timezone ? $date->setTimezone($timezone) : $date;
+    }
+
+    /**
+     * Get the current period end date for this subscription item.
+     *
+     * @param  string|null  $timezone
+     * @return \Carbon\Carbon|null
+     */
+    public function currentPeriodEnd($timezone = null)
+    {
+        $stripeItem = $this->asStripeSubscriptionItem();
+        
+        if (! isset($stripeItem->current_period_end)) {
+            return null;
+        }
+
+        $date = Carbon::createFromTimestamp($stripeItem->current_period_end);
+
+        return $timezone ? $date->setTimezone($timezone) : $date;
+    }
+
+    /**
+     * Determine if the subscription item is currently within its trial period.
+     *
+     * @return bool
+     */
+    public function onTrial()
+    {
+        return $this->subscription->onTrial();
+    }
+
+    /**
+     * Determine if the subscription item is on a grace period after cancellation.
+     *
+     * @return bool
+     */
+    public function onGracePeriod()
+    {
+        return $this->subscription->onGracePeriod();
     }
 
     /**

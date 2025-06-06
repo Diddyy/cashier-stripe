@@ -23,7 +23,7 @@ class Tax
     /**
      * The Stripe TaxRate object.
      *
-     * @var \Stripe\TaxRate
+     * @var \Stripe\TaxRate|null
      */
     protected $taxRate;
 
@@ -32,10 +32,10 @@ class Tax
      *
      * @param  int  $amount
      * @param  string  $currency
-     * @param  \Stripe\TaxRate  $taxRate
+     * @param  \Stripe\TaxRate|null  $taxRate
      * @return void
      */
-    public function __construct($amount, $currency, StripeTaxRate $taxRate)
+    public function __construct($amount, $currency, ?StripeTaxRate $taxRate = null)
     {
         $this->amount = $amount;
         $this->currency = $currency;
@@ -90,11 +90,13 @@ class Tax
      */
     public function isInclusive()
     {
-        return $this->taxRate->inclusive;
+        return $this->taxRate ? $this->taxRate->inclusive : false;
     }
 
     /**
-     * @return \Stripe\TaxRate
+     * Get the Stripe TaxRate object.
+     *
+     * @return \Stripe\TaxRate|null
      */
     public function taxRate()
     {
@@ -109,6 +111,6 @@ class Tax
      */
     public function __get($key)
     {
-        return $this->taxRate->{$key};
+        return $this->taxRate ? $this->taxRate->{$key} : null;
     }
 }

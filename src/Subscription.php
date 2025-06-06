@@ -14,7 +14,9 @@ use Laravel\Cashier\Concerns\HandlesPaymentFailures;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
 use Laravel\Cashier\Database\Factories\SubscriptionFactory;
+use Laravel\Cashier\Coupon;
 use Laravel\Cashier\Exceptions\IncompletePayment;
+use Laravel\Cashier\Exceptions\InvalidCoupon;
 use Laravel\Cashier\Exceptions\SubscriptionUpdateFailure;
 use LogicException;
 use Stripe\Subscription as StripeSubscription;
@@ -61,6 +63,13 @@ class Subscription extends Model
      * @var string|null
      */
     protected $billingCycleAnchor = null;
+
+    /**
+     * The billing thresholds for the subscription.
+     *
+     * @var array|null
+     */
+    protected $billingThresholds = null;
 
     /**
      * Get the user that owns the subscription.
@@ -522,7 +531,7 @@ class Subscription extends Model
             'payment_behavior' => $this->paymentBehavior(),
             'proration_behavior' => $this->prorateBehavior(),
             'quantity' => $quantity,
-            'expand' => ['latest_invoice.payment_intent'],
+            'expand' => ['latest_invoice.confirmation_secret'],
         ]);
 
         $this->fill([
@@ -541,7 +550,7 @@ class Subscription extends Model
      * @param  int  $quantity
      * @param  \DateTimeInterface|int|null  $timestamp
      * @param  string|null  $price
-     * @return \Stripe\UsageRecord
+     * @return \Stripe\V2\Billing\MeterEvent
      */
     public function reportUsage($quantity = 1, $timestamp = null, $price = null)
     {
@@ -558,7 +567,7 @@ class Subscription extends Model
      * @param  string  $price
      * @param  int  $quantity
      * @param  \DateTimeInterface|int|null  $timestamp
-     * @return \Stripe\UsageRecord
+     * @return \Stripe\V2\Billing\MeterEvent
      */
     public function reportUsageFor($price, $quantity = 1, $timestamp = null)
     {
@@ -606,6 +615,19 @@ class Subscription extends Model
         }
 
         $this->billingCycleAnchor = $date;
+
+        return $this;
+    }
+
+    /**
+     * Set billing thresholds for the subscription.
+     *
+     * @param  array  $thresholds
+     * @return $this
+     */
+    public function withBillingThresholds(array $thresholds)
+    {
+        $this->billingThresholds = $thresholds;
 
         return $this;
     }
@@ -818,10 +840,14 @@ class Subscription extends Model
         $payload = array_filter([
             'items' => $items->values()->all(),
             'payment_behavior' => $this->paymentBehavior(),
-            'promotion_code' => $this->promotionCodeId,
             'proration_behavior' => $this->prorateBehavior(),
-            'expand' => ['latest_invoice.payment_intent'],
+            'expand' => ['latest_invoice.confirmation_secret'],
         ]);
+
+        // Add promotion code to discounts if set
+        if (! is_null($this->promotionCodeId)) {
+            $payload['discounts'] = [['promotion_code' => $this->promotionCodeId]];
+        }
 
         if ($payload['payment_behavior'] !== StripeSubscription::PAYMENT_BEHAVIOR_PENDING_IF_INCOMPLETE) {
             $payload['cancel_at_period_end'] = false;
@@ -831,6 +857,10 @@ class Subscription extends Model
 
         if (! is_null($this->billingCycleAnchor)) {
             $payload['billing_cycle_anchor'] = $this->billingCycleAnchor;
+        }
+
+        if (! is_null($this->billingThresholds)) {
+            $payload['billing_thresholds'] = $this->billingThresholds;
         }
 
         $payload['trial_end'] = $this->onTrial()
@@ -998,9 +1028,7 @@ class Subscription extends Model
         if ($this->onTrial()) {
             $this->ends_at = $this->trial_ends_at;
         } else {
-            $this->ends_at = Carbon::createFromTimestamp(
-                $stripeSubscription->current_period_end
-            );
+            $this->ends_at = $this->currentPeriodEnd();
         }
 
         $this->save();
@@ -1122,6 +1150,60 @@ class Subscription extends Model
     }
 
     /**
+     * Get the current period start date for the subscription.
+     * For multi-item subscriptions, returns the earliest start date.
+     *
+     * @param  string|null  $timezone
+     * @return \Carbon\Carbon|null
+     */
+    public function currentPeriodStart($timezone = null)
+    {
+        $items = $this->items;
+        
+        if ($items->isEmpty()) {
+            return null;
+        }
+
+        $earliestStart = null;
+        
+        foreach ($items as $item) {
+            $itemStart = $item->currentPeriodStart();
+            if ($itemStart && (! $earliestStart || $itemStart->lt($earliestStart))) {
+                $earliestStart = $itemStart;
+            }
+        }
+
+        return $earliestStart ? ($timezone ? $earliestStart->setTimezone($timezone) : $earliestStart) : null;
+    }
+
+    /**
+     * Get the current period end date for the subscription.
+     * For multi-item subscriptions, returns the latest end date.
+     *
+     * @param  string|null  $timezone
+     * @return \Carbon\Carbon|null
+     */
+    public function currentPeriodEnd($timezone = null)
+    {
+        $items = $this->items;
+        
+        if ($items->isEmpty()) {
+            return null;
+        }
+
+        $latestEnd = null;
+        
+        foreach ($items as $item) {
+            $itemEnd = $item->currentPeriodEnd();
+            if ($itemEnd && (! $latestEnd || $itemEnd->gt($latestEnd))) {
+                $latestEnd = $itemEnd;
+            }
+        }
+
+        return $latestEnd ? ($timezone ? $latestEnd->setTimezone($timezone) : $latestEnd) : null;
+    }
+
+    /**
      * Invoice the subscription outside of the regular billing cycle.
      *
      * @param  array  $options
@@ -1136,7 +1218,7 @@ class Subscription extends Model
         } catch (IncompletePayment $exception) {
             // Set the new Stripe subscription status immediately when payment fails...
             $this->fill([
-                'stripe_status' => $exception->payment->invoice->subscription->status,
+                'stripe_status' => $this->asStripeSubscription()->status,
             ])->save();
 
             throw $exception;
@@ -1200,14 +1282,15 @@ class Subscription extends Model
                 'items',
                 'proration_behavior',
                 'trial_end',
-            ])
-            ->mapWithKeys(function ($value, $key) {
-                return ["subscription_$key" => $value];
-            })
-            ->merge($options)
-            ->all();
+            ]);
 
-        return $this->upcomingInvoice($swapOptions);
+        // For the new Create Preview Invoice API, we need to structure parameters correctly
+        $previewOptions = [
+            'subscription' => $this->stripe_id,
+            'subscription_details' => $swapOptions->all()
+        ];
+
+        return $this->upcomingInvoice(array_merge($previewOptions, $options));
     }
 
     /**
@@ -1285,13 +1368,20 @@ class Subscription extends Model
      */
     public function latestPayment()
     {
-        $subscription = $this->asStripeSubscription(['latest_invoice.payment_intent']);
+        $subscription = $this->asStripeSubscription(['latest_invoice.payments']);
 
         if ($invoice = $subscription->latest_invoice) {
-            return $invoice->payment_intent
-                ? new Payment($invoice->payment_intent)
-                : null;
+            if (isset($invoice->payments) && !empty($invoice->payments->data)) {
+                $latestPayment = end($invoice->payments->data);
+                if ($latestPayment->payment && $latestPayment->payment->payment_intent) {
+                    return new Payment(
+                        $this->owner::stripe()->paymentIntents->retrieve($latestPayment->payment->payment_intent)
+                    );
+                }
+            }
         }
+        
+        return null;
     }
 
     /**
@@ -1301,11 +1391,31 @@ class Subscription extends Model
      */
     public function discount()
     {
-        $subscription = $this->asStripeSubscription(['discount.promotion_code']);
+        $subscription = $this->asStripeSubscription(['discounts.promotion_code']);
 
-        return $subscription->discount
-            ? new Discount($subscription->discount)
-            : null;
+        if (isset($subscription->discounts) && !empty($subscription->discounts)) {
+            return new Discount($subscription->discounts[0]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get all discounts that apply to the subscription.
+     *
+     * @return \Illuminate\Support\Collection|\Laravel\Cashier\Discount[]
+     */
+    public function discounts()
+    {
+        $subscription = $this->asStripeSubscription(['discounts.promotion_code']);
+
+        if (isset($subscription->discounts) && !empty($subscription->discounts)) {
+            return collect($subscription->discounts)->map(function ($discount) {
+                return new Discount($discount);
+            });
+        }
+
+        return collect();
     }
 
     /**
@@ -1313,12 +1423,40 @@ class Subscription extends Model
      *
      * @param  string  $coupon
      * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
+     * @throws \Stripe\Exception\InvalidRequestException
      */
     public function applyCoupon($coupon)
     {
+        // Validate the coupon to ensure it's not a forever amount_off coupon
+        $this->validateCouponForSubscriptionApplication($coupon);
+
         $this->updateStripeSubscription([
-            'coupon' => $coupon,
+            'discounts' => [['coupon' => $coupon]],
         ]);
+
+        // Clear any cached discount data to ensure fresh data is retrieved
+        unset($this->discount, $this->discounts);
+    }
+
+    /**
+     * Validate that a coupon can be applied to a subscription.
+     *
+     * @param  string  $couponId
+     * @return void
+     *
+     * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    protected function validateCouponForSubscriptionApplication($couponId)
+    {
+        $stripeCoupon = $this->owner::stripe()->coupons->retrieve($couponId);
+        $coupon = new Coupon($stripeCoupon);
+
+        if ($coupon->isForeverAmountOff()) {
+            throw InvalidCoupon::cannotApplyForeverAmountOffToSubscription($couponId);
+        }
     }
 
     /**
@@ -1330,8 +1468,11 @@ class Subscription extends Model
     public function applyPromotionCode($promotionCodeId)
     {
         $this->updateStripeSubscription([
-            'promotion_code' => $promotionCodeId,
+            'discounts' => [['promotion_code' => $promotionCodeId]],
         ]);
+
+        // Clear any cached discount data to ensure fresh data is retrieved
+        unset($this->discount, $this->discounts);
     }
 
     /**

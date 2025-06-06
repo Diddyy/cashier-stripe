@@ -74,8 +74,26 @@ class ChargesTest extends FeatureTestCase
         $user->updateDefaultPaymentMethod('pm_card_visa');
 
         $invoice = $user->invoiceFor('Laravel Cashier', 1000);
-        $refund = $user->refund($invoice->payment_intent);
-
+        
+        // Refresh the invoice with expanded payments data to get the new structure
+        $invoice = $invoice->refresh(['payments']);
+        
+        // Get the payment intent from the invoice payments using the new structure
+        $payments = $invoice->payments();
+        $latestPayment = $payments->last();
+        
+        $this->assertNotNull($latestPayment, 'Invoice should have at least one payment');
+        
+        // Get the payment intent ID from the invoice payment
+        $paymentIntentId = null;
+        
+        if ($latestPayment->asStripeInvoicePayment()->payment->type === 'payment_intent') {
+            $paymentIntentId = $latestPayment->asStripeInvoicePayment()->payment->payment_intent;
+        }
+        
+        $this->assertNotNull($paymentIntentId, 'Payment intent should be found in invoice payment');
+        
+        $refund = $user->refund($paymentIntentId);
         $this->assertEquals(1000, $refund->amount);
     }
 

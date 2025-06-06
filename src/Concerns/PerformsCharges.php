@@ -158,7 +158,7 @@ trait PerformsCharges
                 'product_data' => array_merge($productData, [
                     'name' => $name,
                 ]),
-                'unit_amount' => $amount,
+                'unit_amount_decimal' => $amount,
             ],
             'quantity' => $quantity,
         ]], $sessionOptions, $customerOptions);

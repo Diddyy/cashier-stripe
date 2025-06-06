@@ -168,7 +168,7 @@ class WebhookController extends Controller
             if ($data['cancel_at_period_end'] ?? false) {
                 $subscription->ends_at = $subscription->onTrial()
                     ? $subscription->trial_ends_at
-                    : Carbon::createFromTimestamp($data['current_period_end']);
+                    : $subscription->currentPeriodEnd();
             } elseif (isset($data['cancel_at']) || isset($data['canceled_at'])) {
                 $subscription->ends_at = Carbon::createFromTimestamp($data['cancel_at'] ?? $data['canceled_at']);
             } else {
@@ -301,11 +301,14 @@ class WebhookController extends Controller
 
         if ($user = $this->getUserByStripeId($payload['data']['object']['customer'])) {
             if (in_array(Notifiable::class, class_uses_recursive($user))) {
-                $payment = new Payment($user->stripe()->paymentIntents->retrieve(
-                    $payload['data']['object']['payment_intent']
-                ));
-
-                $user->notify(new $notification($payment));
+                if (isset($payload['data']['object']['payment_intent'])) {
+                    $paymentIntent = $user->stripe()->paymentIntents->retrieve(
+                        $payload['data']['object']['payment_intent']
+                    );
+                    
+                    $payment = new Payment($paymentIntent);
+                    $user->notify(new $notification($payment));
+                }
             }
         }
 

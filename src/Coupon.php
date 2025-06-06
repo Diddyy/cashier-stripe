@@ -80,6 +80,26 @@ class Coupon implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * Determine if this is an amount_off coupon with forever duration.
+     *
+     * @return bool
+     */
+    public function isForeverAmountOff()
+    {
+        return ! is_null($this->coupon->amount_off) && $this->coupon->duration === 'forever';
+    }
+
+    /**
+     * Get the duration of the coupon.
+     *
+     * @return string
+     */
+    public function duration()
+    {
+        return $this->coupon->duration;
+    }
+
+    /**
      * Format the given amount into a displayable currency.
      *
      * @param  int  $amount

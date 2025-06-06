@@ -53,6 +53,13 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     protected $discounts;
 
     /**
+     * The payments associated with the invoice.
+     *
+     * @var \Laravel\Cashier\InvoicePayment[]
+     */
+    protected $payments;
+
+    /**
      * Indicate if the Stripe Object was refreshed with extra data.
      *
      * @var bool
@@ -402,10 +409,15 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
 
         $this->refreshWithExpandedData();
 
-        return $this->taxes = Collection::make($this->invoice->total_tax_amounts)
+        return $this->taxes = Collection::make($this->invoice->total_taxes)
             ->sortByDesc('inclusive')
-            ->map(function (object $taxAmount) {
-                return new Tax($taxAmount->amount, $this->invoice->currency, $taxAmount->tax_rate);
+            ->map(function (object $tax) {
+                if ($tax->type === 'tax_rate_details') {
+                    $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                    return new Tax($tax->amount, $this->invoice->currency, $taxRate);
+                }
+                // Handle other tax types if needed in the future
+                return new Tax($tax->amount, $this->invoice->currency, null);
             })
             ->all();
     }
@@ -468,7 +480,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     public function invoiceItems()
     {
         return Collection::make($this->invoiceLineItems())->filter(function (InvoiceLineItem $item) {
-            return $item->type === 'invoiceitem';
+            return $item->isInvoiceItem();
         })->all();
     }
 
@@ -480,7 +492,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     public function subscriptions()
     {
         return Collection::make($this->invoiceLineItems())->filter(function (InvoiceLineItem $item) {
-            return $item->type === 'subscription';
+            return $item->isSubscription();
         })->all();
     }
 
@@ -507,7 +519,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             }
 
             $page = $page->nextPage([
-                'expand' => ['data.tax_amounts.tax_rate'],
+                'expand' => ['data.taxes.tax_rate_details'],
             ]);
 
             if ($page->isEmpty()) {
@@ -553,13 +565,20 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Refresh the invoice.
+     * Refresh the invoice instance from Stripe.
      *
+     * @param  array  $expand
      * @return $this
      */
-    public function refresh()
+    public function refresh(array $expand = [])
     {
-        $this->invoice = $this->invoice->refresh();
+        if (!empty($expand)) {
+            $this->invoice = $this->owner->stripe()->invoices->retrieve($this->invoice->id, [
+                'expand' => $expand,
+            ]);
+        } else {
+            $this->invoice = $this->invoice->refresh();
+        }
 
         return $this;
     }
@@ -578,9 +597,10 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         $expand = [
             'account_tax_ids',
             'discounts',
-            'lines.data.tax_amounts.tax_rate',
+            'lines.data.taxes.tax_rate_details',
+            'payments',
             'total_discount_amounts.discount',
-            'total_tax_amounts.tax_rate',
+            'total_taxes.tax_rate_details',
         ];
 
         if (isset($this->invoice->id) && $this->invoice->id) {
@@ -589,7 +609,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             ]);
         } else {
             // If no invoice ID is present then assume this is the customer's upcoming invoice...
-            $this->invoice = $this->owner->stripe()->invoices->upcoming(array_merge($this->refreshData, [
+            $this->invoice = $this->owner->stripe()->invoices->createPreview(array_merge($this->refreshData, [
                 'customer' => $this->owner->stripe_id,
                 'expand' => $expand,
             ]));
@@ -607,6 +627,31 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     protected function formatAmount($amount)
     {
         return Cashier::formatAmount($amount, $this->invoice->currency);
+    }
+
+    /**
+     * Get the tax rate from tax rate details, fetching from Stripe if needed.
+     *
+     * @param  object  $taxRateDetails
+     * @return \Stripe\TaxRate|null
+     */
+    protected function getTaxRate($taxRateDetails)
+    {
+        // If tax_rate is already expanded as an object, return it
+        if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
+            return $taxRateDetails->tax_rate;
+        }
+        
+        // If tax_rate is just an ID string, fetch it from Stripe
+        if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate)) {
+            try {
+                return $this->owner->stripe()->taxRates->retrieve($taxRateDetails->tax_rate);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        
+        return null;
     }
 
     /**
@@ -737,6 +782,170 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     public function isPaid()
     {
         return $this->invoice->status === StripeInvoice::STATUS_PAID;
+    }
+
+    /**
+     * Get the invoice payments.
+     *
+     * @return \Illuminate\Support\Collection|\Laravel\Cashier\InvoicePayment[]
+     */
+    public function payments()
+    {
+        if ($this->payments) {
+            return collect($this->payments);
+        }
+
+        // Ensure expanded payments data is loaded
+        $this->refreshWithExpandedData();
+
+        $payments = $this->invoice->payments->data ?? [];
+
+        return collect($payments)->map(function ($payment) {
+            return new InvoicePayment($payment);
+        });
+    }
+
+    /**
+     * Get the amount paid on the invoice.
+     *
+     * @return string
+     */
+    public function amountPaid()
+    {
+        return $this->formatAmount($this->rawAmountPaid());
+    }
+
+    /**
+     * Get the raw amount paid on the invoice.
+     *
+     * @return int
+     */
+    public function rawAmountPaid()
+    {
+        return $this->invoice->amount_paid ?? 0;
+    }
+
+    /**
+     * Get the confirmation secret for Payment Element integrations.
+     *
+     * @return string|null
+     */
+    public function confirmationSecret()
+    {
+        return $this->invoice->confirmation_secret->client_secret ?? null;
+    }
+
+    /**
+     * Get the subscription ID associated with this invoice.
+     *
+     * @return string|null
+     */
+    public function subscriptionId()
+    {
+        if (! isset($this->invoice->parent)) {
+            return null;
+        }
+
+        if ($this->invoice->parent->type === 'subscription_details') {
+            return $this->invoice->parent->subscription_details->subscription ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the quote ID associated with this invoice.
+     *
+     * @return string|null
+     */
+    public function quoteId()
+    {
+        if (! isset($this->invoice->parent)) {
+            return null;
+        }
+
+        if ($this->invoice->parent->type === 'quote_details') {
+            return $this->invoice->parent->quote_details->quote ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the subscription details for this invoice.
+     *
+     * @return object|null
+     */
+    public function subscriptionDetails()
+    {
+        if (! isset($this->invoice->parent)) {
+            return null;
+        }
+
+        if ($this->invoice->parent->type === 'subscription_details') {
+            return $this->invoice->parent->subscription_details ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the subscription proration date for this invoice.
+     *
+     * @return int|null
+     */
+    public function subscriptionProrationDate()
+    {
+        $subscriptionDetails = $this->subscriptionDetails();
+        
+        return $subscriptionDetails->subscription_proration_date ?? null;
+    }
+
+    /**
+     * Get the parent information for this invoice.
+     *
+     * @return object|null
+     */
+    public function parent()
+    {
+        return $this->invoice->parent ?? null;
+    }
+
+    /**
+     * Apply a coupon to this invoice.
+     *
+     * @param  string  $couponId
+     * @param  array  $options
+     * @return $this
+     */
+    public function applyCoupon($couponId, array $options = [])
+    {
+        $options = array_merge([
+            'discounts' => [['coupon' => $couponId]],
+        ], $options);
+
+        $this->invoice = $this->owner->stripe()->invoices->update(
+            $this->invoice->id,
+            $options
+        );
+
+        return $this;
+    }
+
+    /**
+     * Apply a discount to this invoice.
+     *
+     * @param  array  $discount
+     * @return $this
+     */
+    public function applyDiscount(array $discount)
+    {
+        $this->invoice = $this->owner->stripe()->invoices->update(
+            $this->invoice->id,
+            ['discounts' => [$discount]]
+        );
+
+        return $this;
     }
 
     /**

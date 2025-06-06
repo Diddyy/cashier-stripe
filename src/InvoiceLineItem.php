@@ -60,6 +60,75 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * Get the price ID from the pricing structure.
+     *
+     * @return string|null
+     */
+    public function priceId()
+    {
+        // Handle the new pricing structure (Basil release)
+        if (isset($this->item->pricing) && $this->item->pricing->type === 'price_details') {
+            return $this->item->pricing->price_details->price ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the full price object from Stripe.
+     *
+     * @return object|null
+     */
+    public function price()
+    {
+        $priceId = $this->priceId();
+        
+        if ($priceId && $this->invoice->owner()) {
+            try {
+                return $this->invoice->owner()->stripe()->prices->retrieve($priceId);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the unit amount from the pricing structure.
+     *
+     * @return int|null
+     */
+    public function unitAmount()
+    {
+        // Handle the new pricing structure (Basil release)
+        if (isset($this->item->pricing)) {
+            if (isset($this->item->pricing->unit_amount_decimal)) {
+                return (int) $this->item->pricing->unit_amount_decimal;
+            }
+            
+            // For inline price data
+            if ($this->item->pricing->type === 'inline_price_data' && 
+                isset($this->item->pricing->inline_price_data->unit_amount)) {
+                return (int) $this->item->pricing->inline_price_data->unit_amount;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the formatted unit amount.
+     *
+     * @return string
+     */
+    public function unitAmountFormatted()
+    {
+        $unitAmount = $this->unitAmount();
+        return $unitAmount ? $this->formatAmount($unitAmount) : '$0.00';
+    }
+
+    /**
      * Determine if the line item has both inclusive and exclusive tax.
      *
      * @return bool
@@ -105,16 +174,22 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     protected function calculateTaxPercentageByTaxRate($inclusive)
     {
-        if (! $this->item->tax_rates) {
+        if (! isset($this->item->taxes) || empty($this->item->taxes)) {
             return 0;
         }
 
-        return Collection::make($this->item->tax_rates)
-            ->filter(function (StripeTaxRate $taxRate) use ($inclusive) {
-                return $taxRate->inclusive === (bool) $inclusive;
+        return Collection::make($this->item->taxes)
+            ->filter(function (object $tax) use ($inclusive) {
+                if ($tax->type !== 'tax_rate_details' || ! isset($tax->tax_rate_details)) {
+                    return false;
+                }
+                
+                $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                return $taxRate && $taxRate->inclusive === (bool) $inclusive;
             })
-            ->sum(function (StripeTaxRate $taxRate) {
-                return $taxRate->percentage;
+            ->sum(function (object $tax) {
+                $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                return $taxRate ? $taxRate->percentage : 0;
             });
     }
 
@@ -126,16 +201,22 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     protected function calculateTaxPercentageByTaxAmount($inclusive)
     {
-        if (! $this->item->tax_amounts) {
+        if (! isset($this->item->taxes) || empty($this->item->taxes)) {
             return 0;
         }
 
-        return Collection::make($this->item->tax_amounts)
-            ->filter(function (object $taxAmount) use ($inclusive) {
-                return $taxAmount->inclusive === (bool) $inclusive;
+        return Collection::make($this->item->taxes)
+            ->filter(function (object $tax) use ($inclusive) {
+                if ($tax->type !== 'tax_rate_details' || ! isset($tax->tax_rate_details)) {
+                    return false;
+                }
+                
+                $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                return $taxRate && $taxRate->inclusive === (bool) $inclusive;
             })
-            ->sum(function (object $taxAmount) {
-                return $taxAmount->tax_rate->percentage;
+            ->sum(function (object $tax) {
+                $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                return $taxRate ? $taxRate->percentage : 0;
             });
     }
 
@@ -146,11 +227,73 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function hasTaxRates()
     {
-        if ($this->invoice->isNotTaxExempt()) {
-            return ! empty($this->item->tax_amounts);
+        return isset($this->item->taxes) && ! empty($this->item->taxes);
+    }
+
+    /**
+     * Get all taxes applied to this line item.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function taxes()
+    {
+        if (! isset($this->item->taxes)) {
+            return collect();
         }
 
-        return ! empty($this->item->tax_rates);
+        return collect($this->item->taxes);
+    }
+
+    /**
+     * Get tax rate details from the taxes array.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function taxRateDetails()
+    {
+        return $this->taxes()
+            ->filter(function (object $tax) {
+                return $tax->type === 'tax_rate_details' && isset($tax->tax_rate_details);
+            })
+            ->map(function (object $tax) {
+                return $this->getTaxRate($tax->tax_rate_details);
+            })
+            ->filter(); // Remove null values
+    }
+
+    /**
+     * Get the total tax amount for this line item.
+     *
+     * @return int
+     */
+    public function totalTaxAmount()
+    {
+        return $this->taxes()->sum('amount');
+    }
+
+    /**
+     * Get the tax rate from tax rate details, fetching from Stripe if needed.
+     *
+     * @param  object  $taxRateDetails
+     * @return \Stripe\TaxRate|null
+     */
+    protected function getTaxRate($taxRateDetails)
+    {
+        // If tax_rate is already expanded as an object, return it
+        if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
+            return $taxRateDetails->tax_rate;
+        }
+        
+        // If tax_rate is just an ID string, fetch it from Stripe
+        if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate) && $this->invoice->owner()) {
+            try {
+                return $this->invoice->owner()->stripe()->taxRates->retrieve($taxRateDetails->tax_rate);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        
+        return null;
     }
 
     /**
@@ -228,7 +371,132 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function isSubscription()
     {
-        return $this->item->type === 'subscription';
+        return isset($this->item->parent) && 
+               ($this->item->parent->type === 'subscription_details' || 
+                $this->item->parent->type === 'subscription_item_details');
+    }
+
+    /**
+     * Determine if the invoice line item is for an invoice item.
+     *
+     * @return bool
+     */
+    public function isInvoiceItem()
+    {
+        return isset($this->item->parent) && 
+               $this->item->parent->type === 'invoice_item_details';
+    }
+
+    /**
+     * Get the subscription ID associated with this line item.
+     *
+     * @return string|null
+     */
+    public function subscriptionId()
+    {
+        if (! isset($this->item->parent)) {
+            return null;
+        }
+
+        if ($this->item->parent->type === 'subscription_details') {
+            return $this->item->parent->subscription_details->subscription ?? null;
+        }
+
+        if ($this->item->parent->type === 'subscription_item_details') {
+            return $this->item->parent->subscription_item_details->subscription ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the subscription item ID associated with this line item.
+     *
+     * @return string|null
+     */
+    public function subscriptionItemId()
+    {
+        if (! isset($this->item->parent)) {
+            return null;
+        }
+
+        if ($this->item->parent->type === 'subscription_item_details') {
+            return $this->item->parent->subscription_item_details->subscription_item ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the invoice item ID associated with this line item.
+     *
+     * @return string|null
+     */
+    public function invoiceItemId()
+    {
+        if (! isset($this->item->parent)) {
+            return null;
+        }
+
+        if ($this->item->parent->type === 'invoice_item_details') {
+            return $this->item->parent->invoice_item_details->invoice_item ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine if this line item is a proration.
+     *
+     * @return bool
+     */
+    public function isProration()
+    {
+        if (! isset($this->item->parent)) {
+            return false;
+        }
+
+        if ($this->item->parent->type === 'subscription_item_details') {
+            return $this->item->parent->subscription_item_details->proration ?? false;
+        }
+
+        if ($this->item->parent->type === 'invoice_item_details') {
+            return $this->item->parent->invoice_item_details->proration ?? false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get proration details for this line item.
+     *
+     * @return object|null
+     */
+    public function prorationDetails()
+    {
+        if (! isset($this->item->parent)) {
+            return null;
+        }
+
+        if ($this->item->parent->type === 'subscription_item_details') {
+            return $this->item->parent->subscription_item_details->proration_details ?? null;
+        }
+
+        if ($this->item->parent->type === 'invoice_item_details') {
+            return $this->item->parent->invoice_item_details->proration_details ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the parent information for this line item.
+     *
+     * @return object|null
+     */
+    public function parent()
+    {
+        return $this->item->parent ?? null;
     }
 
     /**
@@ -303,5 +571,17 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     public function __get($key)
     {
         return $this->item->{$key};
+    }
+
+    /**
+     * Get the tax behavior from the pricing structure.
+     *
+     * @return string|null
+     */
+    public function taxBehavior()
+    {
+        // Get the price object and return its tax_behavior
+        $price = $this->price();
+        return $price ? ($price->tax_behavior ?? null) : null;
     }
 }

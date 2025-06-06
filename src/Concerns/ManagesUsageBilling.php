@@ -3,7 +3,7 @@
 namespace Laravel\Cashier\Concerns;
 
 use Illuminate\Support\Collection;
-use Stripe\Billing\MeterEvent;
+use Stripe\V2\Billing\MeterEvent;
 
 trait ManagesUsageBilling
 {
@@ -27,7 +27,7 @@ trait ManagesUsageBilling
      * @param  string|null  $price
      * @param  array  $options
      * @param  array  $requestOptions
-     * @return \Stripe\Billing\MeterEvent
+     * @return \Stripe\V2\Billing\MeterEvent
      */
     public function reportMeterEvent(
         string $meter,
@@ -37,12 +37,13 @@ trait ManagesUsageBilling
     ): MeterEvent {
         $this->assertCustomerExists();
 
-        return $this->stripe()->billing->meterEvents->create([
+        return $this->stripe()->v2->billing->meterEvents->create([
             'event_name' => $meter,
             'payload' => [
                 'stripe_customer_id' => $this->stripeId(),
-                'value' => $quantity,
+                'value' => (string) $quantity,
             ],
+            'identifier' => uniqid('cashier_', true),
             ...$options,
         ], $requestOptions);
     }

@@ -283,18 +283,22 @@ class WebhooksTest extends FeatureTestCase
         $user = $this->createCustomer('payment_action_required_email_is_sent');
 
         try {
-            $user->newSubscription('main', static::$priceId)->create('pm_card_threeDSecure2Required');
+            $subscription = $user->newSubscription('main', static::$priceId)->create('pm_card_threeDSecure2Required');
 
             $this->fail('Expected exception '.IncompletePayment::class.' was not thrown.');
         } catch (IncompletePayment $exception) {
             Notification::fake();
+
+            // Get the latest invoice from the user (which should be the one from the failed subscription)
+            $invoices = $user->stripe()->invoices->all(['customer' => $user->stripe_id, 'limit' => 1]);
+            $latestInvoice = $invoices->data[0];
 
             $this->postJson('stripe/webhook', [
                 'id' => 'foo',
                 'type' => 'invoice.payment_action_required',
                 'data' => [
                     'object' => [
-                        'id' => 'foo',
+                        'id' => $latestInvoice->id,
                         'customer' => $user->stripe_id,
                         'payment_intent' => $exception->payment->id,
                     ],

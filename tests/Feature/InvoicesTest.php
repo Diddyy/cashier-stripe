@@ -86,7 +86,12 @@ class InvoicesTest extends FeatureTestCase
 
         $this->assertInstanceOf(Invoice::class, $response);
         $this->assertEquals(599, $response->total);
-        $this->assertEquals('exclusive', $response->invoiceLineItems()[0]->price->tax_behavior);
+        
+        $lineItems = $response->invoiceLineItems();
+        $this->assertNotEmpty($lineItems);
+        
+        $firstItem = $lineItems[0];
+        $this->assertEquals('exclusive', $firstItem->taxBehavior());
     }
 
     public function test_find_invoice_by_id()
@@ -145,12 +150,12 @@ class InvoicesTest extends FeatureTestCase
         $this->assertEquals(5000, $response->total);
 
         $response = $user->tab('Laracon', null, [
-            'unit_amount' => 1000,
+            'unit_amount_decimal' => 1000,
             'quantity' => 2,
         ]);
 
         $this->assertInstanceOf(StripeInvoiceItem::class, $response);
-        $this->assertEquals(1000, $response->unit_amount);
+        $this->assertEquals('1000', $response->pricing->unit_amount_decimal);
         $this->assertEquals(2, $response->quantity);
     }
 }
