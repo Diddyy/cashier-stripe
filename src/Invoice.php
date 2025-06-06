@@ -500,22 +500,21 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Get all of the invoice items.
+     * Get all of the invoice line items.
      *
+     * @param  array  $params
      * @return \Laravel\Cashier\InvoiceLineItem[]
      */
-    public function invoiceLineItems()
+    public function invoiceLineItems(array $params = [])
     {
-        if ($this->items !== null) {
-            return $this->items;
-        }
+        $stripeLineItems = $this->owner->stripe()->invoices->allLines(
+            $this->invoice->id,
+            $params
+        );
 
-        $lines = $this->invoice->lines->data ?? [];
-        $this->items = collect($lines)->map(function ($line) {
+        return collect($stripeLineItems->data)->map(function ($line) {
             return new InvoiceLineItem($this, $line);
         })->all();
-
-        return $this->items;
     }
 
     /**
