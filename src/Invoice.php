@@ -418,10 +418,13 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         $this->taxes = collect($this->invoice->total_taxes ?? [])->map(function ($tax) {
             if (isset($tax->type) && $tax->type === 'tax_rate_details') {
                 $taxRate = $this->getTaxRate($tax->tax_rate_details);
+
                 return new Tax($tax->amount, $this->invoice->currency, $taxRate);
             }
+
             return new Tax($tax->amount, $this->invoice->currency, null);
         })->all();
+
         return $this->taxes;
     }
 
@@ -559,7 +562,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function refresh(array $expand = [])
     {
-        if (!empty($expand)) {
+        if (! empty($expand)) {
             $this->invoice = $this->owner->stripe()->invoices->retrieve($this->invoice->id, [
                 'expand' => $expand,
             ]);
@@ -628,7 +631,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
             return $taxRateDetails->tax_rate;
         }
-        
+
         // If tax_rate is just an ID string, fetch it from Stripe
         if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate)) {
             try {
@@ -637,7 +640,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
                 return null;
             }
         }
-        
+
         return null;
     }
 
@@ -876,7 +879,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     public function subscriptionProrationDate()
     {
         $subscriptionDetails = $this->subscriptionDetails();
-        
+
         return $subscriptionDetails->subscription_proration_date ?? null;
     }
 

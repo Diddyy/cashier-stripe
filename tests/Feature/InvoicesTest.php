@@ -86,10 +86,10 @@ class InvoicesTest extends FeatureTestCase
 
         $this->assertInstanceOf(Invoice::class, $response);
         $this->assertEquals(599, $response->total);
-        
+
         $lineItems = $response->invoiceLineItems();
         $this->assertNotEmpty($lineItems);
-        
+
         $firstItem = $lineItems[0];
         $this->assertEquals('exclusive', $firstItem->taxBehavior());
     }

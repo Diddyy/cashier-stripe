@@ -129,4 +129,4 @@ class InvoicePayment implements Arrayable, Jsonable, JsonSerializable
     {
         return $this->invoicePayment->{$key};
     }
-} 
+}

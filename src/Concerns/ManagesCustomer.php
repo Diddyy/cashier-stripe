@@ -273,14 +273,14 @@ trait ManagesCustomer
         // Try default subscription first, then any active subscription
         $subscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
         
-        if (!$subscription) {
+        if (! $subscription) {
             return null;
         }
 
         // Use the same expansion logic as the subscription's discount method
         $stripeSubscription = $subscription->asStripeSubscription(['discounts.promotion_code']);
 
-        if (isset($stripeSubscription->discounts) && !empty($stripeSubscription->discounts)) {
+        if (isset($stripeSubscription->discounts) && ! empty($stripeSubscription->discounts)) {
             return new Discount($stripeSubscription->discounts[0]);
         }
 
@@ -386,6 +386,7 @@ trait ManagesCustomer
         if ($subscriptionTypes === null) {
             // Try default subscription first, then fall back to the first active subscription
             $primarySubscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
+
             return $primarySubscription ? collect([$primarySubscription]) : collect([]);
         }
 
@@ -396,6 +397,7 @@ trait ManagesCustomer
 
         // If specific types provided, target those
         $types = is_array($subscriptionTypes) ? $subscriptionTypes : [$subscriptionTypes];
+        
         return $this->subscriptions->whereIn('type', $types)->where('stripe_status', 'active');
     }
 

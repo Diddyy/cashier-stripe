@@ -14,7 +14,6 @@ use Laravel\Cashier\Concerns\HandlesPaymentFailures;
 use Laravel\Cashier\Concerns\HandlesTaxes;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
-use Laravel\Cashier\Coupon;
 use Laravel\Cashier\Exceptions\InvalidCoupon;
 use Stripe\Subscription as StripeSubscription;
 
@@ -100,7 +99,7 @@ class SubscriptionBuilder
             $this->price($price);
         }
     }
-    
+
     /**
      * Get the Stripe SDK client.
      *
@@ -446,17 +445,17 @@ class SubscriptionBuilder
         // Apply discounts using new discounts array (supports multiple discounts)
         if ($this->couponId || $this->promotionCodeId) {
             $discounts = [];
-            
+
             if ($this->couponId) {
                 // Validate the coupon before applying
                 $this->validateCouponForSubscriptionApplication($this->couponId);
                 $discounts[] = ['coupon' => $this->couponId];
             }
-            
+
             if ($this->promotionCodeId) {
                 $discounts[] = ['promotion_code' => $this->promotionCodeId];
             }
-            
+
             $payload['discounts'] = $discounts;
         }
 

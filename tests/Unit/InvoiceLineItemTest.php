@@ -115,7 +115,7 @@ class InvoiceLineItemTest extends TestCase
     protected function taxRate($percentage, $inclusive = true)
     {
         return StripeTaxRate::constructFrom([
-            'id' => 'txr_test_' . uniqid(),
+            'id' => 'txr_test_'.uniqid(),
             'inclusive' => $inclusive,
             'percentage' => $percentage,
             'display_name' => 'Test Tax',

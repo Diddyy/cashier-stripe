@@ -2,9 +2,7 @@
 
 namespace Laravel\Cashier\Tests\Feature;
 
-use Exception;
 use InvalidArgumentException;
-use Stripe\Exception\InvalidRequestException;
 
 class MeteredBillingTest extends FeatureTestCase
 {
@@ -52,10 +50,10 @@ class MeteredBillingTest extends FeatureTestCase
 
         // Create meters for the new billing system with unique event names
         $timestamp = time();
-        
+
         static::$meterId = self::stripe()->billing->meters->create([
             'display_name' => 'API Requests',
-            'event_name' => 'api_request_' . $timestamp,
+            'event_name' => 'api_request_'.$timestamp,
             'customer_mapping' => [
                 'event_payload_key' => 'stripe_customer_id',
                 'type' => 'by_id',
@@ -70,7 +68,7 @@ class MeteredBillingTest extends FeatureTestCase
 
         static::$otherMeterId = self::stripe()->billing->meters->create([
             'display_name' => 'Premium API Requests',
-            'event_name' => 'premium_api_request_' . $timestamp,
+            'event_name' => 'premium_api_request_'.$timestamp,
             'customer_mapping' => [
                 'event_payload_key' => 'stripe_customer_id',
                 'type' => 'by_id',
@@ -298,7 +296,7 @@ class MeteredBillingTest extends FeatureTestCase
 
         // Verify the subscription is properly canceled
         $this->assertTrue($subscription->canceled());
-        
+
         // Verify that an upcoming invoice exists (even if usage hasn't been processed yet)
         $invoice = $user->upcomingInvoice();
         $this->assertNotNull($invoice);
@@ -323,10 +321,10 @@ class MeteredBillingTest extends FeatureTestCase
 
         $this->assertNull($user->upcomingInvoice());
         $invoices = $user->invoicesIncludingPending();
-        
+
         // There should be at least one invoice
         $this->assertGreaterThanOrEqual(1, $invoices->count());
-        
+
         // Verify the subscription was properly canceled
         $this->assertTrue($subscription->canceled());
     }

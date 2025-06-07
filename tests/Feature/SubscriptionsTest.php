@@ -495,9 +495,9 @@ class SubscriptionsTest extends FeatureTestCase
         $invoice = $user->invoices()[0];
 
         $this->assertEquals('$11.00', $invoice->total());
-        
+
         $lineItems = $invoice->invoiceLineItems();
-        if (!empty($lineItems)) {
+        if (! empty($lineItems)) {
             $firstItem = $lineItems[0];
             $this->assertEquals('exclusive', $firstItem->taxBehavior());
         }
@@ -526,8 +526,8 @@ class SubscriptionsTest extends FeatureTestCase
         // Invoice Tests
         $invoice = $user->invoices()[0];
         $invoiceItems = $invoice->invoiceItems();
-        
-        if (!empty($invoiceItems)) {
+
+        if (! empty($invoiceItems)) {
             $invoicePeriod = $invoiceItems[0]->period;
 
             $this->assertEquals(

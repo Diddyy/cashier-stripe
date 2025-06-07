@@ -214,19 +214,19 @@ class SubscriptionItem extends Model
     {
         // Get the price to determine the meter
         $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
-        
-        if (!isset($stripePrice->recurring->meter)) {
+
+        if (! isset($stripePrice->recurring->meter)) {
             throw new \InvalidArgumentException('Price must have a meter to report usage. Legacy usage records are no longer supported.');
         }
-        
+
         // Get the meter to get the event name
         $meter = $this->subscription->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
-        
+
         // Convert timestamp to RFC 3339 format for v2 API
         if ($timestamp instanceof DateTimeInterface) {
             $rfc3339Timestamp = $timestamp->format('c');
         } elseif (is_int($timestamp)) {
-            $rfc3339Timestamp = (new \DateTime('@' . $timestamp))->format('c');
+            $rfc3339Timestamp = (new \DateTime('@'.$timestamp))->format('c');
         } else {
             $rfc3339Timestamp = (new \DateTime())->format('c');
         }
@@ -252,8 +252,8 @@ class SubscriptionItem extends Model
     {
         // Get the price to determine the meter
         $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
-        
-        if (!isset($stripePrice->recurring->meter)) {
+
+        if (! isset($stripePrice->recurring->meter)) {
             throw new \InvalidArgumentException('Price must have a meter to get usage records. Legacy usage records are no longer supported.');
         }
 
@@ -279,7 +279,7 @@ class SubscriptionItem extends Model
     public function currentPeriodStart($timezone = null)
     {
         $stripeItem = $this->asStripeSubscriptionItem();
-        
+
         if (! isset($stripeItem->current_period_start)) {
             return null;
         }
@@ -298,7 +298,7 @@ class SubscriptionItem extends Model
     public function currentPeriodEnd($timezone = null)
     {
         $stripeItem = $this->asStripeSubscriptionItem();
-        
+
         if (! isset($stripeItem->current_period_end)) {
             return null;
         }

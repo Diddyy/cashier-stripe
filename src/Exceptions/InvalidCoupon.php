@@ -38,4 +38,4 @@ class InvalidCoupon extends Exception
     {
         return new static("Coupon [{$couponId}] with amount_off and forever duration cannot be used in checkout sessions. Consider using time-limited coupons instead.");
     }
-} 
+}

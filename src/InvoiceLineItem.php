@@ -8,7 +8,6 @@ use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Collection;
 use JsonSerializable;
 use Stripe\InvoiceLineItem as StripeInvoiceLineItem;
-use Stripe\TaxRate as StripeTaxRate;
 
 class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
 {
@@ -82,7 +81,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     public function price()
     {
         $priceId = $this->priceId();
-        
+
         if ($priceId && $this->invoice->owner()) {
             try {
                 return $this->invoice->owner()->stripe()->prices->retrieve($priceId);
@@ -106,9 +105,9 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
             if (isset($this->item->pricing->unit_amount_decimal)) {
                 return (int) $this->item->pricing->unit_amount_decimal;
             }
-            
+
             // For inline price data
-            if ($this->item->pricing->type === 'inline_price_data' && 
+            if ($this->item->pricing->type === 'inline_price_data' &&
                 isset($this->item->pricing->inline_price_data->unit_amount)) {
                 return (int) $this->item->pricing->inline_price_data->unit_amount;
             }
@@ -125,6 +124,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     public function unitAmountFormatted()
     {
         $unitAmount = $this->unitAmount();
+
         return $unitAmount ? $this->formatAmount($unitAmount) : '$0.00';
     }
 
@@ -183,12 +183,14 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
                 if ($tax->type !== 'tax_rate_details' || ! isset($tax->tax_rate_details)) {
                     return false;
                 }
-                
+
                 $taxRate = $this->getTaxRate($tax->tax_rate_details);
+
                 return $taxRate && $taxRate->inclusive === (bool) $inclusive;
             })
             ->sum(function (object $tax) {
                 $taxRate = $this->getTaxRate($tax->tax_rate_details);
+
                 return $taxRate ? $taxRate->percentage : 0;
             });
     }
@@ -210,12 +212,14 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
                 if ($tax->type !== 'tax_rate_details' || ! isset($tax->tax_rate_details)) {
                     return false;
                 }
-                
+
                 $taxRate = $this->getTaxRate($tax->tax_rate_details);
+
                 return $taxRate && $taxRate->inclusive === (bool) $inclusive;
             })
             ->sum(function (object $tax) {
                 $taxRate = $this->getTaxRate($tax->tax_rate_details);
+                
                 return $taxRate ? $taxRate->percentage : 0;
             });
     }
@@ -283,7 +287,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
         if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
             return $taxRateDetails->tax_rate;
         }
-        
+
         // If tax_rate is just an ID string, fetch it from Stripe
         if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate) && $this->invoice->owner()) {
             try {
@@ -292,7 +296,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
                 return null;
             }
         }
-        
+
         return null;
     }
 
@@ -371,8 +375,8 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function isSubscription()
     {
-        return isset($this->item->parent) && 
-               ($this->item->parent->type === 'subscription_details' || 
+        return isset($this->item->parent) &&
+               ($this->item->parent->type === 'subscription_details' ||
                 $this->item->parent->type === 'subscription_item_details');
     }
 
@@ -383,7 +387,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function isInvoiceItem()
     {
-        return isset($this->item->parent) && 
+        return isset($this->item->parent) &&
                $this->item->parent->type === 'invoice_item_details';
     }
 
@@ -582,6 +586,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     {
         // Get the price object and return its tax_behavior
         $price = $this->price();
+        
         return $price ? ($price->tax_behavior ?? null) : null;
     }
 }

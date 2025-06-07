@@ -113,7 +113,7 @@ class DiscountTest extends FeatureTestCase
 
         // Main subscription should not have discount
         $this->assertNull($mainSubscription->fresh()->discount());
-        
+
         // Premium subscription should have discount
         $this->assertEquals(static::$couponId, $premiumSubscription->fresh()->discount()->coupon()->id);
 

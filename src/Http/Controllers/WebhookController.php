@@ -305,7 +305,7 @@ class WebhookController extends Controller
                     $paymentIntent = $user->stripe()->paymentIntents->retrieve(
                         $payload['data']['object']['payment_intent']
                     );
-                    
+
                     $payment = new Payment($paymentIntent);
                     $user->notify(new $notification($payment));
                 }

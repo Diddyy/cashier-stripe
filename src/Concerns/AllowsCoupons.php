@@ -86,7 +86,7 @@ trait AllowsCoupons
             $discounts[] = ['promotion_code' => $this->promotionCodeId];
         }
 
-        return !empty($discounts) ? $discounts : null;
+        return ! empty($discounts) ? $discounts : null;
     }
 
     /**

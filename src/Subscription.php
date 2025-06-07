@@ -14,7 +14,6 @@ use Laravel\Cashier\Concerns\HandlesPaymentFailures;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
 use Laravel\Cashier\Database\Factories\SubscriptionFactory;
-use Laravel\Cashier\Coupon;
 use Laravel\Cashier\Exceptions\IncompletePayment;
 use Laravel\Cashier\Exceptions\InvalidCoupon;
 use Laravel\Cashier\Exceptions\SubscriptionUpdateFailure;
@@ -1159,13 +1158,13 @@ class Subscription extends Model
     public function currentPeriodStart($timezone = null)
     {
         $items = $this->items;
-        
+
         if ($items->isEmpty()) {
             return null;
         }
 
         $earliestStart = null;
-        
+
         foreach ($items as $item) {
             $itemStart = $item->currentPeriodStart();
             if ($itemStart && (! $earliestStart || $itemStart->lt($earliestStart))) {
@@ -1186,13 +1185,13 @@ class Subscription extends Model
     public function currentPeriodEnd($timezone = null)
     {
         $items = $this->items;
-        
+
         if ($items->isEmpty()) {
             return null;
         }
 
         $latestEnd = null;
-        
+
         foreach ($items as $item) {
             $itemEnd = $item->currentPeriodEnd();
             if ($itemEnd && (! $latestEnd || $itemEnd->gt($latestEnd))) {
@@ -1287,7 +1286,7 @@ class Subscription extends Model
         // For the new Create Preview Invoice API, we need to structure parameters correctly
         $previewOptions = [
             'subscription' => $this->stripe_id,
-            'subscription_details' => $swapOptions->all()
+            'subscription_details' => $swapOptions->all(),
         ];
 
         return $this->upcomingInvoice(array_merge($previewOptions, $options));
@@ -1371,7 +1370,7 @@ class Subscription extends Model
         $subscription = $this->asStripeSubscription(['latest_invoice.payments']);
 
         if ($invoice = $subscription->latest_invoice) {
-            if (isset($invoice->payments) && !empty($invoice->payments->data)) {
+            if (isset($invoice->payments) && ! empty($invoice->payments->data)) {
                 $latestPayment = end($invoice->payments->data);
                 if ($latestPayment->payment && $latestPayment->payment->payment_intent) {
                     return new Payment(
@@ -1380,7 +1379,7 @@ class Subscription extends Model
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -1393,7 +1392,7 @@ class Subscription extends Model
     {
         $subscription = $this->asStripeSubscription(['discounts.promotion_code']);
 
-        if (isset($subscription->discounts) && !empty($subscription->discounts)) {
+        if (isset($subscription->discounts) && ! empty($subscription->discounts)) {
             return new Discount($subscription->discounts[0]);
         }
 
@@ -1409,7 +1408,7 @@ class Subscription extends Model
     {
         $subscription = $this->asStripeSubscription(['discounts.promotion_code']);
 
-        if (isset($subscription->discounts) && !empty($subscription->discounts)) {
+        if (isset($subscription->discounts) && ! empty($subscription->discounts)) {
             return collect($subscription->discounts)->map(function ($discount) {
                 return new Discount($discount);
             });
