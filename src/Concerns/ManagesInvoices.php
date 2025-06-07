@@ -143,7 +143,7 @@ trait ManagesInvoices
             // Get the latest payment from the invoice payments
             $stripeInvoice = $invoice->asStripeInvoice()->refresh(['expand' => ['payments']]);
             $invoicePayments = $stripeInvoice->payments->data;
-            
+
             if (! empty($invoicePayments)) {
                 $latestPayment = end($invoicePayments);
                 if ($latestPayment->payment && $latestPayment->payment->payment_intent) {

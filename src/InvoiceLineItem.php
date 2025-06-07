@@ -219,7 +219,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
             })
             ->sum(function (object $tax) {
                 $taxRate = $this->getTaxRate($tax->tax_rate_details);
-                
+
                 return $taxRate ? $taxRate->percentage : 0;
             });
     }
@@ -586,7 +586,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     {
         // Get the price object and return its tax_behavior
         $price = $this->price();
-        
+
         return $price ? ($price->tax_behavior ?? null) : null;
     }
 }

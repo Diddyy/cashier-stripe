@@ -272,7 +272,7 @@ trait ManagesCustomer
         // Since customer-level discounts are no longer supported, check any active subscription
         // Try default subscription first, then any active subscription
         $subscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
-        
+
         if (! $subscription) {
             return null;
         }
@@ -397,7 +397,7 @@ trait ManagesCustomer
 
         // If specific types provided, target those
         $types = is_array($subscriptionTypes) ? $subscriptionTypes : [$subscriptionTypes];
-        
+
         return $this->subscriptions->whereIn('type', $types)->where('stripe_status', 'active');
     }
 
