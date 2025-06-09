@@ -1,6 +1,60 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v15.3.2...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v15.6.4...16.x)
+
+## [v15.6.4](https://github.com/laravel/cashier/compare/v15.6.3...v15.6.4) - 2025-04-22
+
+* Update logo by [@iamdavidhill](https://github.com/iamdavidhill) in https://github.com/laravel/cashier-stripe/pull/1750
+* Remove full stop from command description by [@dwightwatson](https://github.com/dwightwatson) in https://github.com/laravel/cashier-stripe/pull/1754
+* Fix calculating tax rates by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1755
+
+## [v15.6.3](https://github.com/laravel/cashier/compare/v15.6.2...v15.6.3) - 2025-04-01
+
+* Fix typo in upgrade guide by [@ash-jc-allen](https://github.com/ash-jc-allen) in https://github.com/laravel/cashier-stripe/pull/1737
+* [15.x] Highlight method name change by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1740
+* Adds explicit nullable to avoid php 8.4 deprecation warnings by [@PNardman](https://github.com/PNardman) in https://github.com/laravel/cashier-stripe/pull/1742
+* Add `remote_enabled` option to enable external font downloads by [@jbrooksuk](https://github.com/jbrooksuk) in https://github.com/laravel/cashier-stripe/pull/1745
+
+## [v15.6.2](https://github.com/laravel/cashier/compare/v15.6.1...v15.6.2) - 2025-01-28
+
+* Supports Laravel 12 by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1736
+
+## [v15.6.1](https://github.com/laravel/cashier/compare/v15.6.0...v15.6.1) - 2025-01-14
+
+* [15.x] Fix nullable invoice settings by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1732
+* [15.x] Fix failing payment confirm tests by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1731
+
+## [v15.6.0](https://github.com/laravel/cashier/compare/v15.5.1...v15.6.0) - 2024-12-10
+
+* Added Support for New Usage Based Billing by [@Bark-fa](https://github.com/Bark-fa) in https://github.com/laravel/cashier-stripe/pull/1727
+
+## [v15.5.1](https://github.com/laravel/cashier/compare/v15.5.0...v15.5.1) - 2024-11-26
+
+* [15.x] Supports PHP 8.4 by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1724
+
+## [v15.5.0](https://github.com/laravel/cashier/compare/v15.4.3...v15.5.0) - 2024-11-12
+
+* Update logo to support dark/light theme by [@milewski](https://github.com/milewski) in https://github.com/laravel/cashier-stripe/pull/1717
+* Bump stripe/stripe-php to v16 by [@karkowg](https://github.com/karkowg) in https://github.com/laravel/cashier-stripe/pull/1721
+* Fix repeated word "the" in code comment by [@caendesilva](https://github.com/caendesilva) in https://github.com/laravel/cashier-stripe/pull/1723
+
+## [v15.4.3](https://github.com/laravel/cashier/compare/v15.4.2...v15.4.3) - 2024-09-03
+
+* [15.x] Prevent mass assignment issue by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1713
+
+## [v15.4.2](https://github.com/laravel/cashier/compare/v15.4.1...v15.4.2) - 2024-08-20
+
+* Add missing docblocks by [@u01jmg3](https://github.com/u01jmg3) in https://github.com/laravel/cashier-stripe/pull/1694
+* Fixes SQLite migration rollback by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1703
+* [15.x] Catch missing payment intents by [@shatterproof](https://github.com/shatterproof) in https://github.com/laravel/cashier-stripe/pull/1704
+
+## [v15.4.1](https://github.com/laravel/cashier/compare/v15.4.0...v15.4.1) - 2024-07-09
+
+* [15.x] Remove limitation from checkoutCharge by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1690
+
+## [v15.4.0](https://github.com/laravel/cashier/compare/v15.3.2...v15.4.0) - 2024-07-02
+
+* [15.x] Indicate if invoice is paid by [@driesvints](https://github.com/driesvints) in https://github.com/laravel/cashier-stripe/pull/1686
 
 ## [v15.3.2](https://github.com/laravel/cashier/compare/v15.3.1...v15.3.2) - 2024-04-12
 

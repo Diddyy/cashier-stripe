@@ -62,13 +62,15 @@ Because of this change, the `Cashier::ignoreMigrations` method has been removed.
 
 PR: https://github.com/laravel/cashier-stripe/pull/1620
 
-To better indicate the purpose of this column, we've renamed the `name` column on the `subscriptions` table to `type`. The purpose of this change is to resolve confusion surrouding the `name` column as many users believed it needed to be a customer-facing, user friendly "name", when in reality the column is mainly used to differentiate the different "types" of subscriptions your application may offer and is only used internally by Cashier. You should define the following schema change in a migration when upgrading:
+To better indicate the purpose of this column, we've renamed the `name` column on the `subscriptions` table to `type`. The purpose of this change is to resolve confusion surrounding the `name` column as many users believed it needed to be a customer-facing, user friendly "name", when in reality the column is mainly used to differentiate the different "types" of subscriptions your application may offer and is only used internally by Cashier. You should define the following schema change in a migration when upgrading:
 
 ```php
 Schema::table('subscriptions', function (Blueprint $table) {
     $table->renameColumn('name', 'type');
 });
 ```
+
+Additionally, if you're overwriting the `newSubscriptionName` method on the webhook controller, you should rename this method to `newSubscriptionType`.
 
 ### Rename Receipt To Invoice
 
@@ -103,6 +105,24 @@ Previously, when a subscription was canceled, any lingering trial on the subscri
 PR: https://github.com/laravel/cashier-stripe/pull/1529
 
 The `deleted` status on invoices no longer exists and therefore its corresponding method has been removed.
+
+## Upgrading To 14.12.11 From 14.12.10
+
+### Remove Unique Index From Items Table
+
+PR: https://github.com/laravel/cashier-stripe/pull/1594
+
+The unique constraint on the `subscription_items` table was converted to a regular index. You can use the migration below to adjust this index on your table:
+
+```php
+public function up()
+{
+    Schema::table('subscription_items', function (Blueprint $table) {
+        $table->dropUnique(['subscription_id', 'stripe_price']);
+        $table->index(['subscription_id', 'stripe_price']);
+    });
+}
+```
 
 ## Upgrading To 14.12.2 From 14.12
 
