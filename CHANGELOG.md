@@ -1,6 +1,10 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v15.6.4...15.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v15.7.0...15.x)
+
+## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
+
+* [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
 
 ## [v15.6.4](https://github.com/laravel/cashier/compare/v15.6.3...v15.6.4) - 2025-04-22
 
