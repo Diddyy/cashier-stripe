@@ -734,12 +734,20 @@ class Subscription extends Model
         foreach ($stripeSubscription->items as $item) {
             $subscriptionItemIds[] = $item->id;
 
+            $meterEventName = null;
+
+            if (isset($item->price->recurring->meter)) {
+                $meter = $this->owner->stripe()->billing->meters->retrieve($item->price->recurring->meter);
+                $meterEventName = $meter->event_name;
+            }
+
             $this->items()->updateOrCreate([
                 'stripe_id' => $item->id,
             ], [
                 'stripe_product' => $item->price->product,
                 'stripe_price' => $item->price->id,
                 'quantity' => $item->quantity ?? null,
+                'meter_event_name' => $meterEventName,
             ]);
         }
 
@@ -887,6 +895,15 @@ class Subscription extends Model
             throw SubscriptionUpdateFailure::duplicatePrice($this, $price);
         }
 
+        $stripePrice = $this->owner->stripe()->prices->retrieve($price);
+
+        $meterEventName = null;
+
+        if (isset($stripePrice->recurring->meter)) {
+            $meter = $this->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
+            $meterEventName = $meter->event_name;
+        }
+
         $stripeSubscriptionItem = $this->owner->stripe()->subscriptionItems
             ->create(array_filter(array_merge([
                 'subscription' => $this->stripe_id,
@@ -902,6 +919,7 @@ class Subscription extends Model
             'stripe_product' => $stripeSubscriptionItem->price->product,
             'stripe_price' => $stripeSubscriptionItem->price->id,
             'quantity' => $stripeSubscriptionItem->quantity ?? null,
+            'meter_event_name' => $meterEventName,
         ]);
 
         $this->unsetRelation('items');

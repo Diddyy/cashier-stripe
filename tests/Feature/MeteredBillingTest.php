@@ -24,6 +24,16 @@ class MeteredBillingTest extends FeatureTestCase
     /**
      * @var string
      */
+    protected static $meterEventName;
+
+    /**
+     * @var string
+     */
+    protected static $otherMeterEventName;
+
+    /**
+     * @var string
+     */
     protected static $meteredPrice;
 
     /**
@@ -51,9 +61,12 @@ class MeteredBillingTest extends FeatureTestCase
         // Create meters for the new billing system with unique event names
         $timestamp = time();
 
+        static::$meterEventName = 'api_request_'.$timestamp;
+        static::$otherMeterEventName = 'premium_api_request_'.$timestamp;
+
         static::$meterId = self::stripe()->billing->meters->create([
             'display_name' => 'API Requests',
-            'event_name' => 'api_request_'.$timestamp,
+            'event_name' => static::$meterEventName,
             'customer_mapping' => [
                 'event_payload_key' => 'stripe_customer_id',
                 'type' => 'by_id',
@@ -68,7 +81,7 @@ class MeteredBillingTest extends FeatureTestCase
 
         static::$otherMeterId = self::stripe()->billing->meters->create([
             'display_name' => 'Premium API Requests',
-            'event_name' => 'premium_api_request_'.$timestamp,
+            'event_name' => static::$otherMeterEventName,
             'customer_mapping' => [
                 'event_payload_key' => 'stripe_customer_id',
                 'type' => 'by_id',
@@ -124,6 +137,9 @@ class MeteredBillingTest extends FeatureTestCase
         $subscription = $user->newSubscription('main')
             ->meteredPrice(static::$meteredPrice)
             ->create('pm_card_visa');
+
+        $item = $subscription->items->first();
+        $this->assertSame(static::$meterEventName, $item->meter_event_name);
 
         // Test that meter events are created successfully with synchronous validation
         $event1 = $subscription->reportUsage(5);
