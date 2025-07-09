@@ -3,6 +3,7 @@
 namespace Laravel\Cashier\Concerns;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Stripe\V2\Billing\MeterEvent;
 
 trait ManagesUsageBilling
@@ -43,7 +44,7 @@ trait ManagesUsageBilling
                 'stripe_customer_id' => $this->stripeId(),
                 'value' => (string) $quantity,
             ],
-            'identifier' => uniqid('cashier_', true),
+            'identifier' => Str::uuid()->toString(),
             ...$options,
         ], $requestOptions);
     }

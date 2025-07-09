@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Laravel\Cashier\Concerns\HandlesPaymentFailures;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
@@ -266,7 +267,7 @@ class SubscriptionItem extends Model
                 'value' => (string) $quantity,
             ],
             'timestamp' => $rfc3339Timestamp,
-            'identifier' => uniqid('cashier_', true),
+            'identifier' => Str::uuid()->toString(),
         ]);
     }
 

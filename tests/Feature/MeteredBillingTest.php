@@ -2,6 +2,7 @@
 
 namespace Laravel\Cashier\Tests\Feature;
 
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class MeteredBillingTest extends FeatureTestCase
@@ -146,10 +147,12 @@ class MeteredBillingTest extends FeatureTestCase
         $event1 = $subscription->reportUsage(5);
         $this->assertNotNull($event1);
         $this->assertEquals('v2.billing.meter_event', $event1->object);
+        $this->assertTrue(Str::isUuid($event1->identifier));
 
         $event2 = $subscription->reportUsageFor(static::$meteredPrice, 10);
         $this->assertNotNull($event2);
         $this->assertEquals('v2.billing.meter_event', $event2->object);
+        $this->assertTrue(Str::isUuid($event2->identifier));
 
         // Verify the events have the correct payload values
         $this->assertEquals('5', $event1->payload['value']);
@@ -200,6 +203,7 @@ class MeteredBillingTest extends FeatureTestCase
         $event = $subscription->reportUsageFor(static::$otherMeteredPrice, 20);
         $this->assertNotNull($event);
         $this->assertEquals('v2.billing.meter_event', $event->object);
+        $this->assertTrue(Str::isUuid($event->identifier));
         $this->assertEquals('20', $event->payload['value']);
         $this->assertEquals($user->stripeId(), $event->payload['stripe_customer_id']);
 
@@ -307,6 +311,7 @@ class MeteredBillingTest extends FeatureTestCase
         $event = $subscription->reportUsage(10);
         $this->assertNotNull($event);
         $this->assertEquals('v2.billing.meter_event', $event->object);
+        $this->assertTrue(Str::isUuid($event->identifier));
         $this->assertEquals('10', $event->payload['value']);
 
         $subscription->cancel();
@@ -332,6 +337,7 @@ class MeteredBillingTest extends FeatureTestCase
         $event = $subscription->reportUsage(10);
         $this->assertNotNull($event);
         $this->assertEquals('v2.billing.meter_event', $event->object);
+        $this->assertTrue(Str::isUuid($event->identifier));
         $this->assertEquals('10', $event->payload['value']);
 
         $subscription->cancelNowAndInvoice();

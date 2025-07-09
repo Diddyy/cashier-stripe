@@ -347,11 +347,22 @@ class SubscriptionBuilder
 
         /** @var \Stripe\SubscriptionItem $item */
         foreach ($stripeSubscription->items as $item) {
+            $meterId = null;
+            $meterEventName = null;
+
+            if (isset($item->price->recurring->meter)) {
+                $meterId = $item->price->recurring->meter;
+                $meter = $this->owner->stripe()->billing->meters->retrieve($meterId);
+                $meterEventName = $meter->event_name;
+            }
+
             $subscription->items()->create([
                 'stripe_id' => $item->id,
                 'stripe_product' => $item->price->product,
                 'stripe_price' => $item->price->id,
                 'quantity' => $item->quantity ?? null,
+                'meter_id' => $meterId,
+                'meter_event_name' => $meterEventName,
             ]);
         }
 
@@ -390,7 +401,7 @@ class SubscriptionBuilder
             'mode' => 'subscription',
             'subscription_data' => array_filter([
                 'default_tax_rates' => $this->getTaxRatesForPayload(),
-                'trial_end' => $trialEnd ? $trialEnd->getTimestamp() : null,
+                'trial_end' => $trialEnd?->getTimestamp(),
                 'billing_cycle_anchor' => $billingCycleAnchor,
                 'proration_behavior' => $billingCycleAnchor ? $this->prorateBehavior() : null,
                 'metadata' => array_merge($this->metadata, [
