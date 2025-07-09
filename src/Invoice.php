@@ -510,6 +510,11 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function invoiceLineItems(array $params = [])
     {
+        $params['expand'] = array_values(array_unique(array_merge(
+            $params['expand'] ?? [],
+            ['data.price']
+        )));
+
         $stripeLineItems = $this->owner->stripe()->invoices->allLines(
             $this->invoice->id,
             $params
@@ -589,6 +594,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             'discounts',
             'lines.data.taxes.tax_rate_details',
             'lines.data.taxes.tax_rate_details.tax_rate',
+            'lines.data.price',
             'payments',
             'total_discount_amounts.discount',
             'total_taxes.tax_rate_details',

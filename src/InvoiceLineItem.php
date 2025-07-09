@@ -80,6 +80,10 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function price()
     {
+        if (isset($this->item->price) && is_object($this->item->price) && isset($this->item->price->id)) {
+            return $this->item->price;
+        }
+
         $priceId = $this->priceId();
 
         if ($priceId && $this->invoice->owner()) {

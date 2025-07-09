@@ -65,6 +65,26 @@ class InvoiceLineItemTest extends TestCase
         $this->assertSame(37.13, $result);
     }
 
+    public function test_price_uses_expanded_object_when_available()
+    {
+        $customer = new User();
+        $customer->stripe_id = 'foo';
+
+        $stripeInvoice = new StripeInvoice();
+        $stripeInvoice->customer = 'foo';
+
+        $invoice = new Invoice($customer, $stripeInvoice);
+
+        $expandedPrice = (object) ['id' => 'price_test'];
+
+        $stripeInvoiceLineItem = new StripeInvoiceLineItem();
+        $stripeInvoiceLineItem->price = $expandedPrice;
+
+        $item = new InvoiceLineItem($invoice, $stripeInvoiceLineItem);
+
+        $this->assertSame($expandedPrice, $item->price());
+    }
+
     /**
      * Create a tax object in the new structure.
      *
