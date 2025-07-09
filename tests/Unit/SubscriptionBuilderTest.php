@@ -24,4 +24,14 @@ class SubscriptionBuilderTest extends TestCase
             'price_baz' => ['price' => 'price_baz', 'quantity' => 0],
         ], $builder->getItems());
     }
+
+    public function test_quantity_without_price_and_no_items_throws_exception()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('No price specified for quantity update.');
+
+        $builder = new SubscriptionBuilder(new User, 'default');
+
+        $builder->quantity(1);
+    }
 }

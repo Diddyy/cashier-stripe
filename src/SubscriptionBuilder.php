@@ -162,6 +162,10 @@ class SubscriptionBuilder
     public function quantity($quantity, $price = null)
     {
         if (is_null($price)) {
+            if (empty($this->items)) {
+                throw new InvalidArgumentException('No price specified for quantity update.');
+            }
+
             if (count($this->items) > 1) {
                 throw new InvalidArgumentException('Price is required when creating subscriptions with multiple prices.');
             }
