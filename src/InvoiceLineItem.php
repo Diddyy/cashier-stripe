@@ -284,17 +284,8 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     protected function getTaxRate($taxRateDetails)
     {
         // If tax_rate is already expanded as an object, return it
-        if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
+        if (isset($taxRateDetails->tax_rate->id) && is_object($taxRateDetails->tax_rate)) {
             return $taxRateDetails->tax_rate;
-        }
-
-        // If tax_rate is just an ID string, fetch it from Stripe
-        if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate) && $this->invoice->owner()) {
-            try {
-                return $this->invoice->owner()->stripe()->taxRates->retrieve($taxRateDetails->tax_rate);
-            } catch (\Exception $e) {
-                return null;
-            }
         }
 
         return null;

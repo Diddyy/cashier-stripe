@@ -588,9 +588,11 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             'account_tax_ids',
             'discounts',
             'lines.data.taxes.tax_rate_details',
+            'lines.data.taxes.tax_rate_details.tax_rate',
             'payments',
             'total_discount_amounts.discount',
             'total_taxes.tax_rate_details',
+            'total_taxes.tax_rate_details.tax_rate',
         ];
 
         if (isset($this->invoice->id) && $this->invoice->id) {
@@ -630,15 +632,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         // If tax_rate is already expanded as an object, return it
         if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
             return $taxRateDetails->tax_rate;
-        }
-
-        // If tax_rate is just an ID string, fetch it from Stripe
-        if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate)) {
-            try {
-                return $this->owner->stripe()->taxRates->retrieve($taxRateDetails->tax_rate);
-            } catch (\Exception $e) {
-                return null;
-            }
         }
 
         return null;
