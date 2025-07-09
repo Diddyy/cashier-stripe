@@ -29,6 +29,7 @@ class SubscriptionItemFactory extends Factory
             'stripe_product' => 'prod_'.Str::random(40),
             'stripe_price' => 'price_'.Str::random(40),
             'quantity' => null,
+            'meter_event_name' => null,
         ];
     }
 }

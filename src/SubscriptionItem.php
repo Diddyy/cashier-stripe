@@ -36,6 +36,7 @@ class SubscriptionItem extends Model
      */
     protected $casts = [
         'quantity' => 'integer',
+        'meter_event_name' => 'string',
     ];
 
     /**
@@ -150,6 +151,15 @@ class SubscriptionItem extends Model
     {
         $this->subscription->guardAgainstIncomplete();
 
+        $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($price);
+
+        $meterEventName = null;
+
+        if (isset($stripePrice->recurring->meter)) {
+            $meter = $this->subscription->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
+            $meterEventName = $meter->event_name;
+        }
+
         $stripeSubscriptionItem = $this->updateStripeSubscriptionItem(array_merge(
             array_filter([
                 'price' => $price,
@@ -166,6 +176,7 @@ class SubscriptionItem extends Model
             'stripe_product' => $stripeSubscriptionItem->price->product,
             'stripe_price' => $stripeSubscriptionItem->price->id,
             'quantity' => $stripeSubscriptionItem->quantity,
+            'meter_event_name' => $meterEventName,
         ])->save();
 
         $stripeSubscription = $this->subscription->asStripeSubscription();
@@ -212,15 +223,23 @@ class SubscriptionItem extends Model
      */
     public function reportUsage($quantity = 1, $timestamp = null)
     {
-        // Get the price to determine the meter
-        $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
+        $eventName = $this->meter_event_name;
 
-        if (! isset($stripePrice->recurring->meter)) {
-            throw new \InvalidArgumentException('Price must have a meter to report usage. Legacy usage records are no longer supported.');
+        if (! $eventName) {
+            // Get the price to determine the meter
+            $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
+
+            if (! isset($stripePrice->recurring->meter)) {
+                throw new \InvalidArgumentException('Price must have a meter to report usage. Legacy usage records are no longer supported.');
+            }
+
+            // Get the meter to get the event name
+            $meter = $this->subscription->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
+
+            $eventName = $meter->event_name;
+
+            $this->forceFill(['meter_event_name' => $eventName])->save();
         }
-
-        // Get the meter to get the event name
-        $meter = $this->subscription->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
 
         // Convert timestamp to RFC 3339 format for v2 API
         if ($timestamp instanceof DateTimeInterface) {
@@ -232,7 +251,7 @@ class SubscriptionItem extends Model
         }
 
         return $this->subscription->owner->stripe()->v2->billing->meterEvents->create([
-            'event_name' => $meter->event_name,
+            'event_name' => $eventName,
             'payload' => [
                 'stripe_customer_id' => $this->subscription->owner->stripeId(),
                 'value' => (string) $quantity,
