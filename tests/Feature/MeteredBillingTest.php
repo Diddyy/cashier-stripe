@@ -139,6 +139,7 @@ class MeteredBillingTest extends FeatureTestCase
             ->create('pm_card_visa');
 
         $item = $subscription->items->first();
+        $this->assertSame(static::$meterId, $item->meter_id);
         $this->assertSame(static::$meterEventName, $item->meter_event_name);
 
         // Test that meter events are created successfully with synchronous validation

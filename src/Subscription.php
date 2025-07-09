@@ -734,10 +734,12 @@ class Subscription extends Model
         foreach ($stripeSubscription->items as $item) {
             $subscriptionItemIds[] = $item->id;
 
+            $meterId = null;
             $meterEventName = null;
 
             if (isset($item->price->recurring->meter)) {
-                $meter = $this->owner->stripe()->billing->meters->retrieve($item->price->recurring->meter);
+                $meterId = $item->price->recurring->meter;
+                $meter = $this->owner->stripe()->billing->meters->retrieve($meterId);
                 $meterEventName = $meter->event_name;
             }
 
@@ -747,6 +749,7 @@ class Subscription extends Model
                 'stripe_product' => $item->price->product,
                 'stripe_price' => $item->price->id,
                 'quantity' => $item->quantity ?? null,
+                'meter_id' => $meterId,
                 'meter_event_name' => $meterEventName,
             ]);
         }
@@ -897,10 +900,12 @@ class Subscription extends Model
 
         $stripePrice = $this->owner->stripe()->prices->retrieve($price);
 
+        $meterId = null;
         $meterEventName = null;
 
         if (isset($stripePrice->recurring->meter)) {
-            $meter = $this->owner->stripe()->billing->meters->retrieve($stripePrice->recurring->meter);
+            $meterId = $stripePrice->recurring->meter;
+            $meter = $this->owner->stripe()->billing->meters->retrieve($meterId);
             $meterEventName = $meter->event_name;
         }
 
@@ -918,6 +923,7 @@ class Subscription extends Model
             'stripe_id' => $stripeSubscriptionItem->id,
             'stripe_product' => $stripeSubscriptionItem->price->product,
             'stripe_price' => $stripeSubscriptionItem->price->id,
+            'meter_id' => $meterId,
             'quantity' => $stripeSubscriptionItem->quantity ?? null,
             'meter_event_name' => $meterEventName,
         ]);
