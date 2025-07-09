@@ -21,7 +21,8 @@ class CustomerBalanceTransactionTest extends TestCase
             'ending_balance' => 1000,
         ], []);
 
-        $owner = new class {
+        $owner = new class
+        {
             public $stripe_id = 'cus_test_456';
         };
 
@@ -32,4 +33,4 @@ class CustomerBalanceTransactionTest extends TestCase
         $this->assertTrue($transaction->isCheckoutSessionSubscriptionPayment());
         $this->assertFalse($transaction->isCheckoutSessionSubscriptionPaymentCanceled());
     }
-} 
+}
