@@ -1,11 +1,31 @@
 providers:
   - Laravel\Cashier\CashierServiceProvider
+  - App\Providers\WorkbenchServiceProvider
 
 migrations:
   - database/migrations
 
 workbench:
+  start: '/'
+  health: false
+  auth: true
+  discovers:
+    web: true
+    api: true
+    commands: true
+    components: false
+    factories: true
+    views: false
   build:
+    - purge-skeleton
+    - asset-publish
     - create-sqlite-db
-    - db:wipe
-    - migrate:fresh
+    - db-wipe
+    - migrate:fresh:
+       --seed: true
+  assets:
+    - laravel-assets
+  sync:
+    - from: storage
+      to: workbench/storage
+      reverse: true

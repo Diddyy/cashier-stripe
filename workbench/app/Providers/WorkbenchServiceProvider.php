@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Cashier;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,6 @@ class WorkbenchServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Cashier::useCustomerModel(User::class);
     }
 }
