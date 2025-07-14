@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Laravel\Cashier\Tests\Unit;
 
+use App\Models\User;
 use Laravel\Cashier\Invoice;
 use Laravel\Cashier\InvoiceLineItem;
-use Laravel\Cashier\Tests\Fixtures\User;
 use PHPUnit\Framework\TestCase;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Invoice as StripeInvoice;

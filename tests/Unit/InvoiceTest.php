@@ -2,11 +2,11 @@
 
 namespace Laravel\Cashier\Tests\Unit;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonTimeZone;
 use Laravel\Cashier\Discount;
 use Laravel\Cashier\Invoice;
-use Laravel\Cashier\Tests\Fixtures\User;
 use Laravel\Cashier\Tests\TestCase;
 use Mockery as m;
 use stdClass;

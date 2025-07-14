@@ -2,10 +2,10 @@
 
 namespace Laravel\Cashier\Tests;
 
+use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Cashier\Cashier;
-use Laravel\Cashier\Tests\Fixtures\User;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 

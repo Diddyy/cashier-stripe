@@ -2,9 +2,9 @@
 
 namespace Laravel\Cashier\Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Cashier;
-use Laravel\Cashier\Tests\Fixtures\User;
 use Laravel\Cashier\Tests\TestCase;
 use Orchestra\Testbench\Attributes\RequiresEnv;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;

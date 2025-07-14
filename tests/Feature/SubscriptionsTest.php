@@ -2,6 +2,7 @@
 
 namespace Laravel\Cashier\Tests\Feature;
 
+use App\Models\User;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Str;
@@ -9,7 +10,6 @@ use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Exceptions\IncompletePayment;
 use Laravel\Cashier\Payment;
 use Laravel\Cashier\Subscription;
-use Laravel\Cashier\Tests\Fixtures\User;
 use Stripe\Invoice as StripeInvoice;
 use Stripe\Subscription as StripeSubscription;
 

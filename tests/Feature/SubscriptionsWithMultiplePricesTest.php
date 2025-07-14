@@ -2,11 +2,11 @@
 
 namespace Laravel\Cashier\Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Cashier\Exceptions\SubscriptionUpdateFailure;
-use Laravel\Cashier\Tests\Fixtures\User;
 use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionsWithMultiplePricesTest extends FeatureTestCase

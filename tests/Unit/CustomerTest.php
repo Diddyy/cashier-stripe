@@ -2,10 +2,10 @@
 
 namespace Laravel\Cashier\Tests\Unit;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Laravel\Cashier\Exceptions\CustomerAlreadyCreated;
 use Laravel\Cashier\Exceptions\InvalidCustomer;
-use Laravel\Cashier\Tests\Fixtures\User;
 use PHPUnit\Framework\TestCase;
 
 class CustomerTest extends TestCase
