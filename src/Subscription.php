@@ -1426,7 +1426,7 @@ class Subscription extends Model
     /**
      * Get all discounts that apply to the subscription.
      *
-     * @return \Illuminate\Support\Collection|\Laravel\Cashier\Discount[]
+     * @return \Illuminate\Support\Collection<int, \Laravel\Cashier\Discount>
      */
     public function discounts()
     {
