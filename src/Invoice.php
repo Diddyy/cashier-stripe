@@ -562,7 +562,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Refresh the invoice instance from Stripe.
      *
-     * @param  array  $expand
+     * @param  array<int, string>  $expand
      * @return $this
      */
     public function refresh(array $expand = [])
