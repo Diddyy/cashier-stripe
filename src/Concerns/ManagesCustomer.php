@@ -290,7 +290,7 @@ trait ManagesCustomer
     /**
      * Get all discounts that apply to the customer's subscriptions.
      *
-     * @return \Illuminate\Support\Collection|\Laravel\Cashier\Discount[]
+     * @return \Illuminate\Support\Collection<int, \Laravel\Cashier\Discount>
      */
     public function discounts()
     {
