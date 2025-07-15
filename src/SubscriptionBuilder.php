@@ -234,7 +234,7 @@ class SubscriptionBuilder
     /**
      * Set billing thresholds for the subscription.
      *
-     * @param  array  $thresholds
+     * @param  array{amount_gte?: int|null, reset_billing_cycle_anchor?: bool|null}  $thresholds
      * @return $this
      */
     public function withBillingThresholds(array $thresholds)
