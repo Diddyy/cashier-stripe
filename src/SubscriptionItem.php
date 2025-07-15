@@ -179,8 +179,8 @@ class SubscriptionItem extends Model
         $this->fill([
             'stripe_product' => $stripeSubscriptionItem->price->product,
             'stripe_price' => $stripeSubscriptionItem->price->id,
-            'meter_id' => $meterId,
             'quantity' => $stripeSubscriptionItem->quantity,
+            'meter_id' => $meterId,
             'meter_event_name' => $meterEventName,
         ])->save();
 
