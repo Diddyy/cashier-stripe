@@ -774,7 +774,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get the invoice payments.
      *
-     * @return \Illuminate\Support\Collection|\Laravel\Cashier\InvoicePayment[]
+     * @return \Illuminate\Support\Collection<int, \Laravel\Cashier\InvoicePayment>
      */
     public function payments()
     {
