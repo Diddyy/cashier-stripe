@@ -2,6 +2,7 @@
 
 namespace Laravel\Cashier\Concerns;
 
+use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Coupon;
 use Laravel\Cashier\Exceptions\InvalidCoupon;
 
@@ -100,7 +101,11 @@ trait AllowsCoupons
      */
     protected function validateCouponForCheckout($couponId)
     {
-        $stripeCoupon = static::stripe()->coupons->retrieve($couponId);
+        /** @var \Stripe\Service\CouponService $couponService */
+        $couponService = Cashier::stripe()->coupons;
+
+        $stripeCoupon = $couponService->retrieve($couponId);
+
         $coupon = new Coupon($stripeCoupon);
 
         if ($coupon->isForeverAmountOff()) {

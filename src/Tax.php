@@ -90,7 +90,9 @@ class Tax
      */
     public function isInclusive()
     {
-        return $this->taxRate ? $this->taxRate->inclusive : false;
+        return $this->taxRate instanceof StripeTaxRate
+            ? $this->taxRate->inclusive
+            : false;
     }
 
     /**
@@ -111,6 +113,8 @@ class Tax
      */
     public function __get($key)
     {
-        return $this->taxRate ? $this->taxRate->{$key} : null;
+        return $this->taxRate instanceof StripeTaxRate && property_exists($this->TaxRate, $key)
+            ? $this->taxRate->{$key}
+            : null;
     }
 }

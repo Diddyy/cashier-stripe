@@ -21,7 +21,7 @@ use LogicException;
 use Stripe\Subscription as StripeSubscription;
 
 /**
- * @property \Laravel\Cashier\Billable|\Illuminate\Database\Eloquent\Model $owner
+ * @property \Laravel\Cashier\Billable&\Illuminate\Database\Eloquent\Model $owner
  */
 class Subscription extends Model
 {
