@@ -104,17 +104,21 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function unitAmount()
     {
-        // Handle the new pricing structure (Basil release)
-        if (isset($this->item->pricing)) {
-            if (isset($this->item->pricing->unit_amount_decimal)) {
-                return (int) $this->item->pricing->unit_amount_decimal;
-            }
+        if (! isset($this->item->pricing)) {
+            return null;
+        }
 
-            // For inline price data
-            if ($this->item->pricing->type === 'inline_price_data' &&
-                isset($this->item->pricing->inline_price_data->unit_amount)) {
-                return (int) $this->item->pricing->inline_price_data->unit_amount;
-            }
+        // Handle the new pricing structure (Basil release)
+        if (isset($this->item->pricing->unit_amount_decimal)) {
+            return (int) $this->item->pricing->unit_amount_decimal;
+        }
+
+        // For inline price data
+        if (
+            $this->item->pricing->type === 'inline_price_data' &&
+            isset($this->item->pricing->inline_price_data->unit_amount)
+        ) {
+            return (int) $this->item->pricing->inline_price_data->unit_amount;
         }
 
         return null;
