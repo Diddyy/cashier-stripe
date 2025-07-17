@@ -573,7 +573,11 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     public function refresh(array $expand = [])
     {
         if (! empty($expand)) {
-            $this->invoice = $this->owner->stripe()->invoices->retrieve($this->invoice->id, [
+            /** @var \Stripe\Service\InvoiceService $invoiceService */
+            $invoiceService = $this->owner->stripe()->invoices;
+            
+            // If the invoice has an ID, we can retrieve it with the expanded objects.
+            $this->invoice = $invoiceService->retrieve($this->invoice->id, [
                 'expand' => $expand,
             ]);
         } else {
@@ -606,13 +610,18 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             'total_taxes.tax_rate_details.tax_rate',
         ];
 
+        /** @var \Stripe\Service\InvoiceService $invoiceService */
+        $invoiceService = $this->owner->stripe()->invoices;
+
+        // If the invoice has an ID, we retrieve it with the expanded objects.
+        // If no ID is present, we assume this is the customer's upcoming invoice.
+        // We create a preview of the upcoming invoice with the necessary expanded objects.
         if (isset($this->invoice->id) && $this->invoice->id) {
-            $this->invoice = $this->owner->stripe()->invoices->retrieve($this->invoice->id, [
+            $this->invoice = $invoiceService->retrieve($this->invoice->id, [
                 'expand' => $expand,
             ]);
         } else {
-            // If no invoice ID is present then assume this is the customer's upcoming invoice...
-            $this->invoice = $this->owner->stripe()->invoices->createPreview(array_merge($this->refreshData, [
+            $this->invoice = $invoiceService->createPreview(array_merge($this->refreshData, [
                 'customer' => $this->owner->stripe_id,
                 'expand' => $expand,
             ]));
