@@ -824,6 +824,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the confirmation secret for Payment Element integrations.
      *
      * @return string|null
+     * 
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-confirmation_secret
      */
     public function confirmationSecret()
     {
@@ -837,69 +839,63 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function subscriptionId()
     {
-        if (! isset($this->invoice->parent)) {
-            return null;
-        }
-
-        if ($this->invoice->parent->type === 'subscription_details') {
-            return $this->invoice->parent->subscription_details->subscription ?? null;
-        }
-
-        return null;
+        return transform($this->subscriptionDetails(), function ($details) {
+            return $details->subscription ?? null;
+        });
     }
 
     /**
      * Get the quote ID associated with this invoice.
      *
      * @return string|null
+     *
+     * @see https://stripe.com/docs/api/invoices/object#invoice_object-parent
      */
     public function quoteId()
     {
-        if (! isset($this->invoice->parent)) {
-            return null;
-        }
-
-        if ($this->invoice->parent->type === 'quote_details') {
-            return $this->invoice->parent->quote_details->quote ?? null;
-        }
-
-        return null;
+        return transform($this->parent(), function ($parent) {
+            return $parent->type === 'quote_details'
+                ? $parent->quote_details->quote 
+                : null;
+        });
     }
 
     /**
      * Get the subscription details for this invoice.
      *
-     * @return object|null
+     * @return (object{metadata: object|null, subscription: string, subscription_proration_date: int|null})|null
+     * 
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent-subscription_details
      */
     public function subscriptionDetails()
     {
-        if (! isset($this->invoice->parent)) {
-            return null;
-        }
-
-        if ($this->invoice->parent->type === 'subscription_details') {
-            return $this->invoice->parent->subscription_details ?? null;
-        }
-
-        return null;
+        return transform($this->parent(), function ($parent) {
+            return $parent->type === 'subscription_details'
+                ? $parent->subscription_details
+                : null;
+        });
     }
 
     /**
      * Get the subscription proration date for this invoice.
      *
      * @return int|null
+     * 
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent-subscription_details-subscription_proration_date
      */
     public function subscriptionProrationDate()
     {
-        $subscriptionDetails = $this->subscriptionDetails();
-
-        return $subscriptionDetails->subscription_proration_date ?? null;
+        return transform($this->subscriptionDetails(), function ($details) {
+            return $details->subscription_proration_date ?? null;
+        });
     }
 
     /**
      * Get the parent information for this invoice.
      *
-     * @return object|null
+     * @return (object{quote_details?: object, subscription_details?: object,  type: 'quote_details'|'subscription_details'})|null
+     *
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent
      */
     public function parent()
     {
@@ -912,6 +908,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * @param  string  $couponId
      * @param  array  $options
      * @return $this
+     * 
+     * @see https://docs.stripe.com/api/invoices/update#update_invoice-discounts
      */
     public function applyCoupon($couponId, array $options = [])
     {
@@ -919,9 +917,11 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             'discounts' => [['coupon' => $couponId]],
         ], $options);
 
-        $this->invoice = $this->owner->stripe()->invoices->update(
-            $this->invoice->id,
-            $options
+        /** @var \Stripe\Service\InvoiceService $invoiceService */
+        $invoiceService = $this->owner->stripe()->invoices;
+        
+        $this->invoice = $invoiceService->update(
+            $this->invoice->id, $options
         );
 
         return $this;
@@ -932,6 +932,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      *
      * @param  array<string, mixed>  $discount
      * @return $this
+     * 
+     * @see https://docs.stripe.com/api/invoices/update#update_invoice-discounts
      */
     public function applyDiscount(array $discount)
     {
