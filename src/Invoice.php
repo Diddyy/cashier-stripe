@@ -303,13 +303,15 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function discounts()
     {
-        if ($this->discounts !== null) {
+        if (! is_null($this->discounts)) {
             return $this->discounts;
         }
 
         $discounts = $this->invoice->discounts ?? [];
 
-        // Expand discounts if not expanded (string IDs)
+        // If the discounts are returned as an array of strings, we need to refresh
+        // the invoice to get the full discount objects. This can happen if the
+        // invoice was created before the discounts were expanded.
         if (isset($discounts[0]) && is_string($discounts[0])) {
             $this->refresh(['discounts']);
             $discounts = $this->invoice->discounts ?? [];
