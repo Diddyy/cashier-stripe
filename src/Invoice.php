@@ -814,6 +814,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the raw amount paid on the invoice.
      *
      * @return int
+     * 
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-amount_paid
      */
     public function rawAmountPaid()
     {
@@ -836,6 +838,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the subscription ID associated with this invoice.
      *
      * @return string|null
+     * 
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent-subscription_details-subscription
      */
     public function subscriptionId()
     {
