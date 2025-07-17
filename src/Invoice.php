@@ -930,12 +930,15 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Apply a discount to this invoice.
      *
-     * @param  array  $discount
+     * @param  array<string, mixed>  $discount
      * @return $this
      */
     public function applyDiscount(array $discount)
     {
-        $this->invoice = $this->owner->stripe()->invoices->update(
+        /** @var \Stripe\Service\InvoiceService $invoiceService */
+        $invoiceService = $this->owner->stripe()->invoices;
+
+        $this->invoice = $invoiceService->update(
             $this->invoice->id,
             ['discounts' => [$discount]]
         );
