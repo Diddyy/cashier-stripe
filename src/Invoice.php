@@ -307,6 +307,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             return $this->discounts;
         }
 
+        /** @var array<int, \Stripe\Discount|string> $discounts */
         $discounts = $this->invoice->discounts ?? [];
 
         // If the discounts are returned as an array of strings, we need to refresh
@@ -413,7 +414,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     public function taxes()
     {
-        if ($this->taxes !== null) {
+        if (! is_null($this->taxes)) {
             return $this->taxes;
         }
 
@@ -507,7 +508,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get all of the invoice line items.
      *
-     * @param  array  $params
+     * @param  array{ending_before?: string, expand?: string[], limit?: int, starting_after?: string}  $params
      * @return \Laravel\Cashier\InvoiceLineItem[]
      */
     public function invoiceLineItems(array $params = [])
@@ -517,9 +518,11 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             ['data.price']
         )));
 
-        $stripeLineItems = $this->owner->stripe()->invoices->allLines(
-            $this->invoice->id,
-            $params
+        /** @var \Stripe\Service\InvoiceService $invoiceService */
+        $invoiceService = $this->owner->stripe()->invoices;
+
+        $stripeLineItems = $invoiceService->allLines(
+            $this->invoice->id, $params
         );
 
         return collect($stripeLineItems->data)->map(function ($line) {
