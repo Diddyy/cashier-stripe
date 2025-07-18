@@ -77,8 +77,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Create a new invoice instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $owner
-     * @param  \Stripe\Invoice  $invoice
-     * @param  array  $refreshData
      * @return void
      *
      * @throws \Laravel\Cashier\Exceptions\InvalidInvoice
@@ -328,7 +326,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Calculate the amount for a given discount.
      *
-     * @param  \Laravel\Cashier\Discount  $discount
      * @return string|null
      */
     public function discountFor(Discount $discount)
@@ -341,7 +338,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Calculate the raw amount for a given discount.
      *
-     * @param  \Laravel\Cashier\Discount  $discount
      * @return int|null
      */
     public function rawDiscountFor(Discount $discount)
@@ -535,7 +531,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      *
      * @param  string  $description
      * @param  int  $amount
-     * @param  array  $options
      * @return \Stripe\InvoiceItem
      */
     public function tab($description, $amount, array $options = [])
@@ -552,7 +547,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      *
      * @param  string  $price
      * @param  int  $quantity
-     * @param  array  $options
      * @return \Stripe\InvoiceItem
      */
     public function tabPrice($price, $quantity = 1, array $options = [])
@@ -575,7 +569,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         if (! empty($expand)) {
             /** @var \Stripe\Service\InvoiceService $invoiceService */
             $invoiceService = $this->owner->stripe()->invoices;
-            
+
             // If the invoice has an ID, we can retrieve it with the expanded objects.
             $this->invoice = $invoiceService->retrieve($this->invoice->id, [
                 'expand' => $expand,
@@ -680,7 +674,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Finalize the Stripe invoice.
      *
-     * @param  array  $options
      * @return $this
      */
     public function finalize(array $options = [])
@@ -693,7 +686,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Pay the Stripe invoice.
      *
-     * @param  array  $options
      * @return $this
      */
     public function pay(array $options = [])
@@ -706,7 +698,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Send the Stripe invoice to the customer.
      *
-     * @param  array  $options
      * @return $this
      */
     public function send(array $options = [])
@@ -719,7 +710,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Void the Stripe invoice.
      *
-     * @param  array  $options
      * @return $this
      */
     public function void(array $options = [])
@@ -732,7 +722,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Mark an invoice as uncollectible.
      *
-     * @param  array  $options
      * @return $this
      */
     public function markUncollectible(array $options = [])
@@ -745,7 +734,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Delete the Stripe invoice.
      *
-     * @param  array  $options
      * @return $this
      */
     public function delete(array $options = [])
@@ -814,7 +802,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the raw amount paid on the invoice.
      *
      * @return int
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/object#invoice_object-amount_paid
      */
     public function rawAmountPaid()
@@ -826,7 +814,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the confirmation secret for Payment Element integrations.
      *
      * @return string|null
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/object#invoice_object-confirmation_secret
      */
     public function confirmationSecret()
@@ -838,7 +826,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the subscription ID associated with this invoice.
      *
      * @return string|null
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent-subscription_details-subscription
      */
     public function subscriptionId()
@@ -859,7 +847,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     {
         return transform($this->parent(), function ($parent) {
             return $parent->type === 'quote_details'
-                ? $parent->quote_details->quote 
+                ? $parent->quote_details->quote
                 : null;
         });
     }
@@ -868,7 +856,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the subscription details for this invoice.
      *
      * @return (object{metadata: object|null, subscription: string, subscription_proration_date: int|null})|null
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent-subscription_details
      */
     public function subscriptionDetails()
@@ -884,7 +872,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Get the subscription proration date for this invoice.
      *
      * @return int|null
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent-subscription_details-subscription_proration_date
      */
     public function subscriptionProrationDate()
@@ -910,9 +898,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Apply a coupon to this invoice.
      *
      * @param  string  $couponId
-     * @param  array  $options
      * @return $this
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/update#update_invoice-discounts
      */
     public function applyCoupon($couponId, array $options = [])
@@ -923,7 +910,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
 
         /** @var \Stripe\Service\InvoiceService $invoiceService */
         $invoiceService = $this->owner->stripe()->invoices;
-        
+
         $this->invoice = $invoiceService->update(
             $this->invoice->id, $options
         );
@@ -936,7 +923,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      *
      * @param  array<string, mixed>  $discount
      * @return $this
-     * 
+     *
      * @see https://docs.stripe.com/api/invoices/update#update_invoice-discounts
      */
     public function applyDiscount(array $discount)
@@ -975,7 +962,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get the View instance for the invoice.
      *
-     * @param  array  $data
      * @return \Illuminate\Contracts\View\View
      */
     public function view(array $data = [])
@@ -990,7 +976,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Capture the invoice as a PDF and return the raw bytes.
      *
-     * @param  array  $data
      * @return string
      */
     public function pdf(array $data = [])
@@ -1007,7 +992,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Create an invoice download response.
      *
-     * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function download(array $data = [])
@@ -1022,7 +1006,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Create an invoice download response with a specific filename.
      *
      * @param  string  $filename
-     * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function downloadAs($filename, array $data = [])
