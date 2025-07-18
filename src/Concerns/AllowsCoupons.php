@@ -103,10 +103,10 @@ trait AllowsCoupons
      */
     protected function validateCouponForCheckout($couponId)
     {
-        /** @var \Stripe\Service\CouponService $couponService */
-        $couponService = static::stripe()->coupons;
+        /** @var \Stripe\Service\CouponService $couponsService */
+        $couponsService = static::stripe()->coupons;
 
-        $stripeCoupon = $couponService->retrieve($couponId);
+        $stripeCoupon = $couponsService->retrieve($couponId);
 
         $coupon = new Coupon($stripeCoupon);
 
