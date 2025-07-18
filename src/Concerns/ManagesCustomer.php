@@ -12,6 +12,7 @@ use Laravel\Cashier\Exceptions\CustomerAlreadyCreated;
 use Laravel\Cashier\Exceptions\InvalidCoupon;
 use Laravel\Cashier\Exceptions\InvalidCustomer;
 use Laravel\Cashier\PromotionCode;
+use Laravel\Cashier\Subscription;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Exception\InvalidRequestException as StripeInvalidRequestException;
 
@@ -273,7 +274,7 @@ trait ManagesCustomer
         // Try default subscription first, then any active subscription
         $subscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
 
-        if (! $subscription) {
+        if (! $subscription instanceof Subscription) {
             return null;
         }
 
