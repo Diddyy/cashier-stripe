@@ -306,7 +306,7 @@ trait ManagesCustomer
      * By default, applies to the primary subscription only for safety.
      *
      * @param  string  $coupon
-     * @param  string|array|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
+     * @param  string|array<int, string>|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
      * @return void
      *
      * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
@@ -378,7 +378,7 @@ trait ManagesCustomer
     /**
      * Get the target subscriptions based on the provided criteria.
      *
-     * @param  string|array|null  $subscriptionTypes
+     * @param  string|array<int, string>|null  $subscriptionTypes
      * @return \Illuminate\Support\Collection
      */
     protected function getTargetSubscriptions($subscriptionTypes = null)
