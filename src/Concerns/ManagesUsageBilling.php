@@ -8,6 +8,8 @@ use Stripe\V2\Billing\MeterEvent;
 
 trait ManagesUsageBilling
 {
+    use InteractsWithStripe;
+
     /**
      * Get all of the defined billing meters.
      *
@@ -38,7 +40,10 @@ trait ManagesUsageBilling
     ): MeterEvent {
         $this->assertCustomerExists();
 
-        return $this->stripe()->v2->billing->meterEvents->create([
+        /** @var \Stripe\Service\V2\Billing\MeterEventService $meterEventsService */
+        $meterEventsService = static::stripe()->v2->billing->meterEvents;
+
+        return $meterEventsService->create([
             'event_name' => $meter,
             'payload' => [
                 'stripe_customer_id' => $this->stripeId(),
@@ -65,7 +70,10 @@ trait ManagesUsageBilling
             $endTime = time();
         }
 
-        return new Collection($this->stripe()->billing->meters->allEventSummaries(
+        /** @var \Stripe\Service\Billing\MeterService $metersService */
+        $metersService = static::stripe()->billing->meters;
+
+        return new Collection($metersService->allEventSummaries(
             $meterId,
             [
                 'customer' => $this->stripeId(),
