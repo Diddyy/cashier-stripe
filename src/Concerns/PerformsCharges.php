@@ -9,6 +9,7 @@ use Stripe\Exception\InvalidRequestException as StripeInvalidRequestException;
 trait PerformsCharges
 {
     use AllowsCoupons;
+    use InteractsWithStripe;
 
     /**
      * Make a "one off" charge on the customer for the given amount.
@@ -88,8 +89,11 @@ trait PerformsCharges
             $options['customer'] = $this->stripe_id;
         }
 
+        /** @var \Stripe\Service\PaymentIntentService $paymentIntentsService */
+        $paymentIntentsService = static::stripe()->paymentIntents;
+
         return new Payment(
-            static::stripe()->paymentIntents->create($options)
+            $paymentIntentsService->create($options)
         );
     }
 
@@ -103,8 +107,11 @@ trait PerformsCharges
     {
         $stripePaymentIntent = null;
 
+        /** @var \Stripe\Service\PaymentIntentService $paymentIntentsService */
+        $paymentIntentsService = static::stripe()->paymentIntents;
+
         try {
-            $stripePaymentIntent = static::stripe()->paymentIntents->retrieve($id);
+            $stripePaymentIntent = $paymentIntentsService->retrieve($id);
         } catch (StripeInvalidRequestException $exception) {
             //
         }
@@ -121,7 +128,10 @@ trait PerformsCharges
      */
     public function refund($paymentIntent, array $options = [])
     {
-        return static::stripe()->refunds->create(
+        /** @var \Stripe\Service\RefundService $refundsService */
+        $refundsService = static::stripe()->refunds;
+
+        return $refundsService->create(
             ['payment_intent' => $paymentIntent] + $options
         );
     }

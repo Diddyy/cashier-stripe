@@ -425,10 +425,10 @@ trait ManagesCustomer
      */
     protected function validateCouponForCustomerApplication($couponId)
     {
-        /** @var \Stripe\Service\CouponService $couponService */
-        $couponService = static::stripe()->coupons;
+        /** @var \Stripe\Service\CouponService $couponsService */
+        $couponsService = static::stripe()->coupons;
 
-        $stripeCoupon = $couponService->retrieve($couponId);
+        $stripeCoupon = $couponsService->retrieve($couponId);
         $coupon = new Coupon($stripeCoupon);
 
         if ($coupon->isForeverAmountOff()) {
@@ -445,7 +445,7 @@ trait ManagesCustomer
      */
     public function findPromotionCode($code, array $options = [])
     {
-        /** @var \Stripe\Service\PromotionCodeService $couponService */
+        /** @var \Stripe\Service\PromotionCodeService $promotionCodesService */
         $promotionCodesService = static::stripe()->promotionCodes;
 
         $codes = $promotionCodesService->all(array_merge([

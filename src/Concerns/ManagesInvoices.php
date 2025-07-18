@@ -18,6 +18,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait ManagesInvoices
 {
+    use InteractsWithStripe;
+
     /**
      * Add an invoice item to the customer's upcoming invoice.
      *
@@ -53,7 +55,10 @@ trait ManagesInvoices
             $options['amount'] = $amount;
         }
 
-        return static::stripe()->invoiceItems->create($options);
+        /** @var \Stripe\Service\InvoiceItemService $invoiceItems */
+        $invoiceItemsService = static::stripe()->invoiceItems;
+
+        return $invoiceItemsService->create($options);
     }
 
     /**
@@ -92,7 +97,10 @@ trait ManagesInvoices
             'quantity' => $quantity,
         ], $options);
 
-        return static::stripe()->invoiceItems->create($options);
+        /** @var \Stripe\Service\InvoiceItemService $invoiceItems */
+        $invoiceItemsService = static::stripe()->invoiceItems;
+
+        return $invoiceItemsService->create($options);
     }
 
     /**
