@@ -7,6 +7,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 use Stripe\Discount as StripeDiscount;
+use Stripe\PromotionCode as StripePromotionCode;
 
 class Discount implements Arrayable, Jsonable, JsonSerializable
 {
@@ -56,7 +57,7 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
 
         // If promotion_code is just an ID string, fetch it from Stripe
         if (is_string($this->discount->promotion_code)) {
-            $promotionCode = \Stripe\PromotionCode::retrieve($this->discount->promotion_code);
+            $promotionCode = StripePromotionCode::retrieve($this->discount->promotion_code);
 
             return new PromotionCode($promotionCode);
         }
