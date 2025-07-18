@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Laravel\Cashier\Exceptions\InvalidInvoice;
 use Laravel\Cashier\Invoice;
+use Laravel\Cashier\InvoicePayment;
 use Laravel\Cashier\Payment;
 use LogicException;
 use Stripe\Exception\CardException as StripeCardException;
@@ -410,7 +411,7 @@ trait ManagesInvoices
         ]);
 
         return collect($invoicePayments->data)->map(function ($payment) {
-            return new \Laravel\Cashier\InvoicePayment($payment);
+            return new InvoicePayment($payment);
         });
     }
 
@@ -427,7 +428,7 @@ trait ManagesInvoices
         ]);
 
         return collect($invoicePayments->data)->map(function ($payment) {
-            return new \Laravel\Cashier\InvoicePayment($payment);
+            return new InvoicePayment($payment);
         });
     }
 }
