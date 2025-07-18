@@ -24,6 +24,7 @@ class SubscriptionBuilder
     use HandlesPaymentFailures;
     use HandlesTaxes;
     use InteractsWithPaymentBehavior;
+    use InteractsWithStripe;
     use Prorates;
 
     /**
@@ -98,17 +99,6 @@ class SubscriptionBuilder
         foreach ((array) $prices as $price) {
             $this->price($price);
         }
-    }
-
-    /**
-     * Get the Stripe SDK client.
-     *
-     * @param  array  $options
-     * @return \Stripe\StripeClient
-     */
-    public static function stripe(array $options = [])
-    {
-        return Cashier::stripe($options);
     }
 
     /**
@@ -543,7 +533,10 @@ class SubscriptionBuilder
      */
     protected function validateCouponForSubscriptionApplication($couponId)
     {
-        $stripeCoupon = $this->owner::stripe()->coupons->retrieve($couponId);
+        /** @var \Stripe\Service\CouponService $couponsService */
+        $couponsService = $this->owner::stripe()->coupons;
+
+        $stripeCoupon = $couponsService->retrieve($couponId);
         $coupon = new Coupon($stripeCoupon);
 
         if ($coupon->isForeverAmountOff()) {

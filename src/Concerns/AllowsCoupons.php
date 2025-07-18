@@ -2,7 +2,6 @@
 
 namespace Laravel\Cashier\Concerns;
 
-use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Coupon;
 use Laravel\Cashier\Exceptions\InvalidCoupon;
 
