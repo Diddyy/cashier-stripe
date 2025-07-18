@@ -8,6 +8,8 @@ use Laravel\Cashier\Exceptions\InvalidCoupon;
 
 trait AllowsCoupons
 {
+    use InteractsWithStripe;
+
     /**
      * The coupon ID being applied.
      *
@@ -102,7 +104,7 @@ trait AllowsCoupons
     protected function validateCouponForCheckout($couponId)
     {
         /** @var \Stripe\Service\CouponService $couponService */
-        $couponService = Cashier::stripe()->coupons;
+        $couponService = static::stripe()->coupons;
 
         $stripeCoupon = $couponService->retrieve($couponId);
 
