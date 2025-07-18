@@ -18,6 +18,8 @@ use Stripe\Exception\InvalidRequestException as StripeInvalidRequestException;
 
 trait ManagesCustomer
 {
+    use InteractsWithStripe;
+
     /**
      * Retrieve the Stripe customer ID.
      *
@@ -93,7 +95,11 @@ trait ManagesCustomer
         // Here we will create the customer instance on Stripe and store the ID of the
         // user from Stripe. This ID will correspond with the Stripe user instances
         // and allow us to retrieve users from Stripe later when we need to work.
-        $customer = static::stripe()->customers->create($options);
+
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
+        $customer = $customersService->create($options);
 
         $this->stripe_id = $customer->id;
 
@@ -110,7 +116,10 @@ trait ManagesCustomer
      */
     public function updateStripeCustomer(array $options = [])
     {
-        return static::stripe()->customers->update(
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
+        return $customersService->update(
             $this->stripe_id, $options
         );
     }
@@ -170,7 +179,10 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
-        return static::stripe()->customers->retrieve(
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
+        return $customersService->retrieve(
             $this->stripe_id, ['expand' => $expand]
         );
     }
@@ -305,25 +317,25 @@ trait ManagesCustomer
      * Apply a coupon to the customer's subscriptions.
      * By default, applies to the primary subscription only for safety.
      *
-     * @param  string  $coupon
+     * @param  string  $couponId
      * @param  string|array<int, string>|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
      * @return void
      *
      * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
      */
-    public function applyCoupon($coupon, $subscriptionTypes = null)
+    public function applyCoupon($couponId, $subscriptionTypes = null)
     {
         $this->assertCustomerExists();
 
         // Validate the coupon to ensure it's not a forever amount_off coupon
-        $this->validateCouponForCustomerApplication($coupon);
+        $this->validateCouponForCustomerApplication($couponId);
 
         $subscriptions = $this->getTargetSubscriptions($subscriptionTypes);
 
         foreach ($subscriptions as $subscription) {
             // Skip validation since we already validated above for customer application
             $subscription->updateStripeSubscription([
-                'discounts' => [['coupon' => $coupon]],
+                'discounts' => [['coupon' => $couponId]],
             ]);
         }
     }
@@ -413,7 +425,10 @@ trait ManagesCustomer
      */
     protected function validateCouponForCustomerApplication($couponId)
     {
-        $stripeCoupon = static::stripe()->coupons->retrieve($couponId);
+        /** @var \Stripe\Service\CouponService $couponService */
+        $couponService = static::stripe()->coupons;
+
+        $stripeCoupon = $couponService->retrieve($couponId);
         $coupon = new Coupon($stripeCoupon);
 
         if ($coupon->isForeverAmountOff()) {
@@ -430,7 +445,10 @@ trait ManagesCustomer
      */
     public function findPromotionCode($code, array $options = [])
     {
-        $codes = static::stripe()->promotionCodes->all(array_merge([
+        /** @var \Stripe\Service\PromotionCodeService $couponService */
+        $promotionCodesService = static::stripe()->promotionCodes;
+
+        $codes = $promotionCodesService->all(array_merge([
             'code' => $code,
             'limit' => 1,
         ], $options));
@@ -489,9 +507,12 @@ trait ManagesCustomer
             return new Collection();
         }
 
-        $transactions = static::stripe()
-            ->customers
-            ->allBalanceTransactions($this->stripe_id, array_merge(['limit' => $limit], $options));
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
+        $transactions = $customersService->allBalanceTransactions(
+            $this->stripe_id, array_merge(['limit' => $limit], $options)
+        );
 
         return Collection::make($transactions->data)->map(function ($transaction) {
             return new CustomerBalanceTransaction($this, $transaction);
@@ -536,13 +557,17 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
-        $transaction = static::stripe()
-            ->customers
-            ->createBalanceTransaction($this->stripe_id, array_filter(array_merge([
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
+        $transaction = $customersService->createBalanceTransaction(
+            $this->stripe_id,
+            array_filter(array_merge([
                 'amount' => $amount,
                 'currency' => $this->preferredCurrency(),
                 'description' => $description,
-            ], $options)));
+            ], $options))
+        );
 
         return new CustomerBalanceTransaction($this, $transaction);
     }
@@ -579,7 +604,10 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
-        return static::stripe()->billingPortal->sessions->create(array_merge([
+        /** @var \Stripe\Service\BillingPortal\SessionService $sessionsService */
+        $sessionsService = static::stripe()->billingPortal->sessions;
+
+        return $sessionsService->create(array_merge([
             'customer' => $this->stripeId(),
             'return_url' => $returnUrl ?? route('home'),
         ], $options))['url'];
@@ -609,8 +637,11 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
         return new Collection(
-            static::stripe()->customers->allTaxIds($this->stripe_id, $options)->data
+            $customersService->allTaxIds($this->stripe_id, $options)->data
         );
     }
 
@@ -624,8 +655,11 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
         try {
-            return static::stripe()->customers->retrieveTaxId(
+            return $customersService->retrieveTaxId(
                 $this->stripe_id, $id, []
             );
         } catch (StripeInvalidRequestException $exception) {
@@ -644,7 +678,10 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
-        return static::stripe()->customers->createTaxId($this->stripe_id, [
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
+        return $customersService->createTaxId($this->stripe_id, [
             'type' => $type,
             'value' => $value,
         ]);
@@ -660,8 +697,11 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
+        /** @var \Stripe\Service\CustomerService $customersService */
+        $customersService = static::stripe()->customers;
+
         try {
-            static::stripe()->customers->deleteTaxId($this->stripe_id, $id);
+            $customersService->deleteTaxId($this->stripe_id, $id);
         } catch (StripeInvalidRequestException $exception) {
             //
         }
@@ -695,16 +735,5 @@ trait ManagesCustomer
     public function reverseChargeApplies()
     {
         return $this->asStripeCustomer()->tax_exempt === StripeCustomer::TAX_EXEMPT_REVERSE;
-    }
-
-    /**
-     * Get the Stripe SDK client.
-     *
-     * @param  array  $options
-     * @return \Stripe\StripeClient
-     */
-    public static function stripe(array $options = [])
-    {
-        return Cashier::stripe($options);
     }
 }
