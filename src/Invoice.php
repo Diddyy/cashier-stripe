@@ -77,6 +77,8 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Create a new invoice instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $owner
+     * @param  \Stripe\Invoice  $invoice
+     * @param  array  $refreshData
      * @return void
      *
      * @throws \Laravel\Cashier\Exceptions\InvalidInvoice
@@ -338,6 +340,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Calculate the raw amount for a given discount.
      *
+     * @param  \Laravel\Cashier\Discount  $discount
      * @return int|null
      */
     public function rawDiscountFor(Discount $discount)
@@ -531,6 +534,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      *
      * @param  string  $description
      * @param  int  $amount
+     * @param  array  $options
      * @return \Stripe\InvoiceItem
      */
     public function tab($description, $amount, array $options = [])
@@ -547,6 +551,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      *
      * @param  string  $price
      * @param  int  $quantity
+     * @param  array  $options
      * @return \Stripe\InvoiceItem
      */
     public function tabPrice($price, $quantity = 1, array $options = [])
@@ -674,6 +679,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Finalize the Stripe invoice.
      *
+     * @param  array  $options
      * @return $this
      */
     public function finalize(array $options = [])
@@ -686,6 +692,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Pay the Stripe invoice.
      *
+     * @param  array  $options
      * @return $this
      */
     public function pay(array $options = [])
@@ -698,6 +705,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Send the Stripe invoice to the customer.
      *
+     * @param  array  $options
      * @return $this
      */
     public function send(array $options = [])
@@ -710,6 +718,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Void the Stripe invoice.
      *
+     * @param  array  $options
      * @return $this
      */
     public function void(array $options = [])
@@ -722,6 +731,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Mark an invoice as uncollectible.
      *
+     * @param  array  $options
      * @return $this
      */
     public function markUncollectible(array $options = [])
@@ -734,6 +744,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Delete the Stripe invoice.
      *
+     * @param  array  $options
      * @return $this
      */
     public function delete(array $options = [])
@@ -962,6 +973,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get the View instance for the invoice.
      *
+     * @param  array  $data
      * @return \Illuminate\Contracts\View\View
      */
     public function view(array $data = [])
@@ -976,6 +988,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Capture the invoice as a PDF and return the raw bytes.
      *
+     * @param  array  $data
      * @return string
      */
     public function pdf(array $data = [])
@@ -992,6 +1005,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Create an invoice download response.
      *
+     * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function download(array $data = [])
@@ -1006,6 +1020,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * Create an invoice download response with a specific filename.
      *
      * @param  string  $filename
+     * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function downloadAs($filename, array $data = [])
