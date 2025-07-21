@@ -11,6 +11,7 @@ use NumberFormatter;
 use Stripe\BaseStripeClient;
 use Stripe\Customer as StripeCustomer;
 use Stripe\StripeClient;
+use Stripe\Util\ApiVersion as StripeApiVersion;
 
 class Cashier
 {
@@ -26,7 +27,7 @@ class Cashier
      *
      * @var string
      */
-    const STRIPE_VERSION = '2025-03-31.basil';
+    const STRIPE_VERSION = StripeApiVersion::CURRENT;
 
     /**
      * The base URL for the Stripe API.
