@@ -328,6 +328,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Calculate the amount for a given discount.
      *
+     * @param  \Laravel\Cashier\Discount  $discount
      * @return string|null
      */
     public function discountFor(Discount $discount)
