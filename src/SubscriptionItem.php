@@ -2,7 +2,6 @@
 
 namespace Laravel\Cashier;
 
-use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -311,7 +310,7 @@ class SubscriptionItem extends Model
      * Get the current period start date for this subscription item.
      *
      * @param  string|null  $timezone
-     * @return \Carbon\Carbon|null
+     * @return \Illuminate\Support\Carbon|null
      */
     public function currentPeriodStart($timezone = null)
     {
@@ -321,7 +320,7 @@ class SubscriptionItem extends Model
             return null;
         }
 
-        $date = Carbon::createFromTimestamp($stripeItem->current_period_start);
+        $date = $this->asDateTime($stripeItem->current_period_start);
 
         return $timezone ? $date->setTimezone($timezone) : $date;
     }
@@ -340,7 +339,7 @@ class SubscriptionItem extends Model
             return null;
         }
 
-        $date = Carbon::createFromTimestamp($stripeItem->current_period_end);
+        $date = $this->asDateTime($stripeItem->current_period_end);
 
         return $timezone ? $date->setTimezone($timezone) : $date;
     }
