@@ -1,6 +1,10 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v15.7.0...15.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v15.7.1...15.x)
+
+## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
+
+* Prevent duplicate subscription create webhookController by [@ishannz](https://github.com/ishannz) in https://github.com/laravel/cashier-stripe/pull/1761
 
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
