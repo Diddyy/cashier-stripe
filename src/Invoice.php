@@ -649,12 +649,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     protected function getTaxRate($taxRateDetails)
     {
-        // If tax_rate is already expanded as an object, return it
-        if (isset($taxRateDetails->tax_rate) && is_object($taxRateDetails->tax_rate) && isset($taxRateDetails->tax_rate->id)) {
-            return $taxRateDetails->tax_rate;
-        }
-
-        return null;
+        return $taxRateDetails->tax_rate instanceof \Stripe\TaxRate ? $taxRateDetails->tax_rate : null;
     }
 
     /**
