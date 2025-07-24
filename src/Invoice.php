@@ -13,6 +13,7 @@ use Laravel\Cashier\Contracts\InvoiceRenderer;
 use Laravel\Cashier\Exceptions\InvalidInvoice;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Invoice as StripeInvoice;
+use Stripe\TaxRate as StripeTaxRate;
 use Symfony\Component\HttpFoundation\Response;
 
 class Invoice implements Arrayable, Jsonable, JsonSerializable
@@ -649,7 +650,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     protected function getTaxRate($taxRateDetails)
     {
-        return $taxRateDetails->tax_rate instanceof \Stripe\TaxRate ? $taxRateDetails->tax_rate : null;
+        return $taxRateDetails->tax_rate instanceof StripeTaxRate ? $taxRateDetails->tax_rate : null;
     }
 
     /**
