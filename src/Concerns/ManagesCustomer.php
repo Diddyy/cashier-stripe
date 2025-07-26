@@ -367,14 +367,14 @@ trait ManagesCustomer
      * Apply a coupon to all active subscriptions.
      * Explicit method for when you want to apply to all subscriptions.
      *
-     * @param  string  $coupon
+     * @param  string  $couponId
      * @return void
      *
      * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
      */
-    public function applyCouponToAllSubscriptions($coupon)
+    public function applyCouponToAllSubscriptions($couponId)
     {
-        return $this->applyCoupon($coupon, '*');
+        return $this->applyCoupon($couponId, '*');
     }
 
     /**
