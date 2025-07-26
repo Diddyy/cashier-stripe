@@ -929,19 +929,19 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * Apply a discount to this invoice.
      *
-     * @param  array<string, mixed>  $discount
+     * @param  array<string, mixed>  $discounts
      * @return $this
      *
      * @see https://docs.stripe.com/api/invoices/update#update_invoice-discounts
      */
-    public function applyDiscount(array $discount)
+    public function applyDiscount(array $discounts)
     {
         /** @var \Stripe\Service\InvoiceService $invoiceService */
         $invoiceService = $this->owner->stripe()->invoices;
 
         $this->invoice = $invoiceService->update(
             $this->invoice->id,
-            ['discounts' => [$discount]]
+            ['discounts' => [$discounts]]
         );
 
         return $this;
