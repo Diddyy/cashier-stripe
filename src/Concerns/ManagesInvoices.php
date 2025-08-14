@@ -149,12 +149,14 @@ trait ManagesInvoices
 
             return $invoice->chargesAutomatically() ? $invoice->pay($payOptions) : $invoice->send();
         } catch (StripeCardException $exception) {
-            // Get the latest payment from the invoice payments
+            // Get the latest payment from the invoice payments...
             $stripeInvoice = $invoice->asStripeInvoice()->refresh(['expand' => ['payments']]);
+
             $invoicePayments = $stripeInvoice->payments->data;
 
             if (! empty($invoicePayments)) {
                 $latestPayment = end($invoicePayments);
+
                 if ($latestPayment->payment && $latestPayment->payment->payment_intent) {
                     $payment = new Payment(
                         static::stripe()->paymentIntents->retrieve(
@@ -162,6 +164,7 @@ trait ManagesInvoices
                             ['expand' => ['invoice.subscription']]
                         )
                     );
+
                     $payment->validate();
                 }
             }
@@ -218,11 +221,10 @@ trait ManagesInvoices
             'customer' => $this->stripe_id,
         ], $options);
 
-        // For the new Create Preview Invoice API, we need to provide specific details.
-        // If no subscription, subscription_details, schedule, schedule_details, or invoice_items
-        // are provided, we'll try to use the customer's first active subscription
+        // For the new Create Preview Invoice API, we need to provide specific details....
         if (! $this->hasRequiredPreviewDetails($parameters)) {
             $activeSubscription = $this->subscriptions()->active()->first();
+
             if ($activeSubscription) {
                 $parameters['subscription'] = $activeSubscription->stripe_id;
             }
@@ -337,6 +339,7 @@ trait ManagesInvoices
         if (! is_null($stripeInvoices)) {
             foreach ($stripeInvoices->data as $invoice) {
                 $invoiceInstance = new Invoice($this, $invoice);
+
                 if ($invoiceInstance->isPaid() || $includePending) {
                     $invoices[] = $invoiceInstance;
                 }

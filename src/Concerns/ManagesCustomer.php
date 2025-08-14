@@ -96,8 +96,6 @@ trait ManagesCustomer
         // Here we will create the customer instance on Stripe and store the ID of the
         // user from Stripe. This ID will correspond with the Stripe user instances
         // and allow us to retrieve users from Stripe later when we need to work.
-
-        /** @var \Stripe\Service\CustomerService $customersService */
         $customersService = static::stripe()->customers;
 
         $customer = $customersService->create($options, $requestOptions);
@@ -284,15 +282,16 @@ trait ManagesCustomer
      */
     public function discount()
     {
-        // Since customer-level discounts are no longer supported, check any active subscription
-        // Try default subscription first, then any active subscription
-        $subscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
+        // Customer-level discounts are no longer supported, check any active subscription...
+        // Try default subscription first, then any active subscription...
+        $subscription = $this->subscription()
+            ?: $this->subscriptions->where('stripe_status', 'active')->first();
 
         if (! $subscription instanceof Subscription) {
             return null;
         }
 
-        // Use the same expansion logic as the subscription's discount method
+        // Use the same expansion logic as the subscription's discount method...
         $stripeSubscription = $subscription->asStripeSubscription(['discounts.promotion_code']);
 
         if (isset($stripeSubscription->discounts) && ! empty($stripeSubscription->discounts)) {
@@ -309,7 +308,6 @@ trait ManagesCustomer
      */
     public function discounts()
     {
-        // Since customer-level discounts are no longer supported, collect discounts from all subscriptions
         return $this->subscriptions()->map(function ($subscription) {
             return $subscription->discounts();
         })->flatten();
@@ -317,10 +315,11 @@ trait ManagesCustomer
 
     /**
      * Apply a coupon to the customer's subscriptions.
-     * By default, applies to the primary subscription only for safety.
+     *
+     * By default, applies to the primary subscription only.
      *
      * @param  string  $couponId
-     * @param  string|array<int, string>|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
+     * @param  string|array<int, string>|null  $subscriptionTypes
      * @return void
      *
      * @throws \Laravel\Cashier\Exceptions\InvalidCoupon
@@ -329,13 +328,12 @@ trait ManagesCustomer
     {
         $this->assertCustomerExists();
 
-        // Validate the coupon to ensure it's not a forever amount_off coupon
+        // Validate the coupon to ensure it's not a forever amount_off coupon...
         $this->validateCouponForCustomerApplication($couponId);
 
         $subscriptions = $this->getTargetSubscriptions($subscriptionTypes);
 
         foreach ($subscriptions as $subscription) {
-            // Skip validation since we already validated above for customer application
             $subscription->updateStripeSubscription([
                 'discounts' => [['coupon' => $couponId]],
             ]);
@@ -344,10 +342,11 @@ trait ManagesCustomer
 
     /**
      * Apply a promotion code to the customer's subscriptions.
+     *
      * By default, applies to the primary subscription only for safety.
      *
      * @param  string  $promotionCodeId
-     * @param  string|array|null  $subscriptionTypes  Specific subscription types to target, or null for primary only
+     * @param  string|array|null  $subscriptionTypes
      * @return void
      */
     public function applyPromotionCode($promotionCodeId, $subscriptionTypes = null)
@@ -365,7 +364,6 @@ trait ManagesCustomer
 
     /**
      * Apply a coupon to all active subscriptions.
-     * Explicit method for when you want to apply to all subscriptions.
      *
      * @param  string  $couponId
      * @return void
@@ -379,7 +377,6 @@ trait ManagesCustomer
 
     /**
      * Apply a promotion code to all active subscriptions.
-     * Explicit method for when you want to apply to all subscriptions.
      *
      * @param  string  $promotionCodeId
      * @return void
@@ -397,20 +394,20 @@ trait ManagesCustomer
      */
     protected function getTargetSubscriptions($subscriptionTypes = null)
     {
-        // If null, target the primary subscription only (safest default)
+        // If null, target the primary subscription only (safest default)...
         if ($subscriptionTypes === null) {
-            // Try default subscription first, then fall back to the first active subscription
+            // Try default subscription first, then fall back to the first active subscription...
             $primarySubscription = $this->subscription() ?: $this->subscriptions->where('stripe_status', 'active')->first();
 
             return $primarySubscription ? collect([$primarySubscription]) : collect([]);
         }
 
-        // If '*', target all active subscriptions
+        // If '*', target all active subscriptions...
         if ($subscriptionTypes === '*') {
             return $this->subscriptions->where('stripe_status', 'active');
         }
 
-        // If specific types provided, target those
+        // If specific types provided, target those...
         $types = is_array($subscriptionTypes) ? $subscriptionTypes : [$subscriptionTypes];
 
         return $this->subscriptions->whereIn('type', $types)->where('stripe_status', 'active');
@@ -431,6 +428,7 @@ trait ManagesCustomer
         $couponsService = static::stripe()->coupons;
 
         $stripeCoupon = $couponsService->retrieve($couponId);
+
         $coupon = new Coupon($stripeCoupon);
 
         if ($coupon->isForeverAmountOff()) {

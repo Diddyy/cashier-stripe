@@ -50,12 +50,12 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
             return null;
         }
 
-        // If promotion_code is already expanded as an object, use it
+        // If promotion_code is already expanded as an object, use it...
         if (is_object($this->discount->promotion_code) && isset($this->discount->promotion_code->id)) {
             return new PromotionCode($this->discount->promotion_code);
         }
 
-        // If promotion_code is just an ID string, fetch it from Stripe
+        // If promotion_code is just an ID string, fetch it from Stripe...
         if (is_string($this->discount->promotion_code)) {
             $promotionCode = StripePromotionCode::retrieve($this->discount->promotion_code);
 

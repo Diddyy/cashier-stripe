@@ -59,45 +59,6 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Get the price ID from the pricing structure.
-     *
-     * @return string|null
-     */
-    public function priceId()
-    {
-        // Handle the new pricing structure (Basil release)
-        if (isset($this->item->pricing) && $this->item->pricing->type === 'price_details') {
-            return $this->item->pricing->price_details->price ?? null;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the full price object from Stripe.
-     *
-     * @return object|null
-     */
-    public function price()
-    {
-        if (isset($this->item->price) && is_object($this->item->price) && isset($this->item->price->id)) {
-            return $this->item->price;
-        }
-
-        $priceId = $this->priceId();
-
-        if ($priceId && $this->invoice->owner()) {
-            try {
-                return $this->invoice->owner()->stripe()->prices->retrieve($priceId);
-            } catch (\Exception $e) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Get the unit amount from the pricing structure.
      *
      * @return int|null
@@ -108,12 +69,12 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
             return null;
         }
 
-        // Handle the new pricing structure (Basil release)
+        // Handle the new pricing structure (Basil release)...
         if (isset($this->item->pricing->unit_amount_decimal)) {
             return (int) $this->item->pricing->unit_amount_decimal;
         }
 
-        // For inline price data
+        // For inline price data...
         if (
             $this->item->pricing->type === 'inline_price_data' &&
             isset($this->item->pricing->inline_price_data->unit_amount)
@@ -129,7 +90,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      *
      * @return string
      */
-    public function unitAmountFormatted()
+    public function formattedUnitAmount()
     {
         $unitAmount = $this->unitAmount();
 
@@ -270,7 +231,23 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
             ->map(function (object $tax) {
                 return $this->getTaxRate($tax->tax_rate_details);
             })
-            ->filter(); // Remove null values
+            ->filter();
+    }
+
+    /**
+     * Get the tax rate from tax rate details, fetching from Stripe if needed.
+     *
+     * @param  object  $taxRateDetails
+     * @return \Stripe\TaxRate|null
+     */
+    protected function getTaxRate($taxRateDetails)
+    {
+        // If tax_rate is already expanded as an object, return it...
+        if (isset($taxRateDetails->tax_rate->id) && is_object($taxRateDetails->tax_rate)) {
+            return $taxRateDetails->tax_rate;
+        }
+
+        return null;
     }
 
     /**
@@ -284,19 +261,16 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Get the tax rate from tax rate details, fetching from Stripe if needed.
+     * Get the tax behavior from the pricing structure.
      *
-     * @param  object  $taxRateDetails
-     * @return \Stripe\TaxRate|null
+     * @return string|null
      */
-    protected function getTaxRate($taxRateDetails)
+    public function taxBehavior()
     {
-        // If tax_rate is already expanded as an object, return it
-        if (isset($taxRateDetails->tax_rate->id) && is_object($taxRateDetails->tax_rate)) {
-            return $taxRateDetails->tax_rate;
-        }
+        // Get the price object and return its tax_behavior...
+        $price = $this->price();
 
-        return null;
+        return $price ? ($price->tax_behavior ?? null) : null;
     }
 
     /**
@@ -493,6 +467,45 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * Get the price ID from the pricing structure.
+     *
+     * @return string|null
+     */
+    public function priceId()
+    {
+        // Handle the new pricing structure (Basil release)...
+        if (isset($this->item->pricing) && $this->item->pricing->type === 'price_details') {
+            return $this->item->pricing->price_details->price ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the full price object from Stripe.
+     *
+     * @return object|null
+     */
+    public function price()
+    {
+        if (isset($this->item->price) && is_object($this->item->price) && isset($this->item->price->id)) {
+            return $this->item->price;
+        }
+
+        $priceId = $this->priceId();
+
+        if ($priceId && $this->invoice->owner()) {
+            try {
+                return $this->invoice->owner()->stripe()->prices->retrieve($priceId);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get the parent information for this line item.
      *
      * @return object|null
@@ -574,18 +587,5 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
     public function __get($key)
     {
         return $this->item->{$key};
-    }
-
-    /**
-     * Get the tax behavior from the pricing structure.
-     *
-     * @return string|null
-     */
-    public function taxBehavior()
-    {
-        // Get the price object and return its tax_behavior
-        $price = $this->price();
-
-        return $price ? ($price->tax_behavior ?? null) : null;
     }
 }

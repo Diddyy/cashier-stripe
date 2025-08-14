@@ -47,18 +47,18 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     protected $taxes;
 
     /**
-     * The discounts applied to the invoice.
-     *
-     * @var \Laravel\Cashier\Discount[]
-     */
-    protected $discounts;
-
-    /**
      * The payments associated with the invoice.
      *
      * @var \Laravel\Cashier\InvoicePayment[]
      */
     protected $payments;
+
+    /**
+     * The discounts applied to the invoice.
+     *
+     * @var \Laravel\Cashier\Discount[]
+     */
+    protected $discounts;
 
     /**
      * Indicate if the Stripe Object was refreshed with extra data.
@@ -311,9 +311,9 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         /** @var array<int, \Stripe\Discount|string> $discounts */
         $discounts = $this->invoice->discounts ?? [];
 
-        // If the discounts are returned as an array of strings, we need to refresh
+        // If the discounts are returned as an array of strings we need to refresh
         // the invoice to get the full discount objects. This can happen if the
-        // invoice was created before the discounts were expanded.
+        // invoice was created before the discounts were fully expanded here.
         if (isset($discounts[0]) && is_string($discounts[0])) {
             $this->refresh(['discounts']);
             $discounts = $this->invoice->discounts ?? [];
@@ -430,6 +430,17 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         })->all();
 
         return $this->taxes;
+    }
+
+    /**
+     * Get the tax rate from tax rate details, fetching from Stripe if needed.
+     *
+     * @param  object  $taxRateDetails
+     * @return \Stripe\TaxRate|null
+     */
+    protected function getTaxRate($taxRateDetails)
+    {
+        return $taxRateDetails->tax_rate instanceof StripeTaxRate ? $taxRateDetails->tax_rate : null;
     }
 
     /**
@@ -577,7 +588,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             /** @var \Stripe\Service\InvoiceService $invoiceService */
             $invoiceService = $this->owner->stripe()->invoices;
 
-            // If the invoice has an ID, we can retrieve it with the expanded objects.
+            // If the invoice has an ID, we can retrieve it with the expanded objects...
             $this->invoice = $invoiceService->retrieve($this->invoice->id, [
                 'expand' => $expand,
             ]);
@@ -614,9 +625,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         /** @var \Stripe\Service\InvoiceService $invoiceService */
         $invoiceService = $this->owner->stripe()->invoices;
 
-        // If the invoice has an ID, we retrieve it with the expanded objects.
-        // If no ID is present, we assume this is the customer's upcoming invoice.
-        // We create a preview of the upcoming invoice with the necessary expanded objects.
         if (isset($this->invoice->id) && $this->invoice->id) {
             $this->invoice = $invoiceService->retrieve($this->invoice->id, [
                 'expand' => $expand,
@@ -640,17 +648,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     protected function formatAmount($amount)
     {
         return Cashier::formatAmount($amount, $this->invoice->currency);
-    }
-
-    /**
-     * Get the tax rate from tax rate details, fetching from Stripe if needed.
-     *
-     * @param  object  $taxRateDetails
-     * @return \Stripe\TaxRate|null
-     */
-    protected function getTaxRate($taxRateDetails)
-    {
-        return $taxRateDetails->tax_rate instanceof StripeTaxRate ? $taxRateDetails->tax_rate : null;
     }
 
     /**
@@ -792,7 +789,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
             return collect($this->payments);
         }
 
-        // Retrieve invoice payments via the API, allowing users to expand or filter via list params
+        // Retrieve invoice payments via the API, allowing users to expand or filter via list parameters...
         return $this->owner->invoicePaymentsForInvoice($this->invoice->id);
     }
 
@@ -891,18 +888,6 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Get the parent information for this invoice.
-     *
-     * @return (object{quote_details?: object, subscription_details?: object,  type: 'quote_details'|'subscription_details'})|null
-     *
-     * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent
-     */
-    public function parent()
-    {
-        return $this->invoice->parent ?? null;
-    }
-
-    /**
      * Apply a coupon to this invoice.
      *
      * @param  string  $couponId
@@ -945,6 +930,18 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
         );
 
         return $this;
+    }
+
+    /**
+     * Get the parent information for this invoice.
+     *
+     * @return (object{quote_details?: object, subscription_details?: object,  type: 'quote_details'|'subscription_details'})|null
+     *
+     * @see https://docs.stripe.com/api/invoices/object#invoice_object-parent
+     */
+    public function parent()
+    {
+        return $this->invoice->parent ?? null;
     }
 
     /**

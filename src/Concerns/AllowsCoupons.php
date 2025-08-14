@@ -81,6 +81,7 @@ trait AllowsCoupons
 
         if ($this->couponId) {
             $this->validateCouponForCheckout($this->couponId);
+
             $discounts[] = ['coupon' => $this->couponId];
         }
 

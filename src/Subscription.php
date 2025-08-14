@@ -748,8 +748,8 @@ class Subscription extends Model
             ], [
                 'stripe_product' => $item->price->product,
                 'stripe_price' => $item->price->id,
-                'quantity' => $item->quantity ?? null,
                 'meter_id' => $meterId,
+                'quantity' => $item->quantity ?? null,
                 'meter_event_name' => $meterEventName,
             ]);
         }
@@ -854,7 +854,7 @@ class Subscription extends Model
             'expand' => ['latest_invoice.confirmation_secret'],
         ]);
 
-        // Add promotion code to discounts if set
+        // Add promotion code to discounts if set...
         if (! is_null($this->promotionCodeId)) {
             $payload['discounts'] = [['promotion_code' => $this->promotionCodeId]];
         }
@@ -1174,6 +1174,7 @@ class Subscription extends Model
 
     /**
      * Get the current period start date for the subscription.
+     *
      * For multi-item subscriptions, returns the earliest start date.
      *
      * @param  string|null  $timezone
@@ -1191,6 +1192,7 @@ class Subscription extends Model
 
         foreach ($items as $item) {
             $itemStart = $item->currentPeriodStart();
+
             if ($itemStart && (! $earliestStart || $itemStart->lt($earliestStart))) {
                 $earliestStart = $itemStart;
             }
@@ -1201,6 +1203,7 @@ class Subscription extends Model
 
     /**
      * Get the current period end date for the subscription.
+     *
      * For multi-item subscriptions, returns the latest end date.
      *
      * @param  string|null  $timezone
@@ -1218,6 +1221,7 @@ class Subscription extends Model
 
         foreach ($items as $item) {
             $itemEnd = $item->currentPeriodEnd();
+
             if ($itemEnd && (! $latestEnd || $itemEnd->gt($latestEnd))) {
                 $latestEnd = $itemEnd;
             }
@@ -1307,7 +1311,7 @@ class Subscription extends Model
                 'trial_end',
             ]);
 
-        // For the new Create Preview Invoice API, we need to structure parameters correctly
+        // For the new Create Preview Invoice API, we need to structure parameters correctly...
         $previewOptions = [
             'subscription' => $this->stripe_id,
             'subscription_details' => $swapOptions->all(),
@@ -1396,6 +1400,7 @@ class Subscription extends Model
         if ($invoice = $subscription->latest_invoice) {
             if (isset($invoice->payments) && ! empty($invoice->payments->data)) {
                 $latestPayment = end($invoice->payments->data);
+
                 if ($latestPayment->payment && $latestPayment->payment->payment_intent) {
                     return new Payment(
                         $this->owner::stripe()->paymentIntents->retrieve($latestPayment->payment->payment_intent)
@@ -1452,14 +1457,14 @@ class Subscription extends Model
      */
     public function applyCoupon($coupon)
     {
-        // Validate the coupon to ensure it's not a forever amount_off coupon
+        // Validate the coupon to ensure it's not a forever amount_off coupon...
         $this->validateCouponForSubscriptionApplication($coupon);
 
         $this->updateStripeSubscription([
             'discounts' => [['coupon' => $coupon]],
         ]);
 
-        // Clear any cached discount data to ensure fresh data is retrieved
+        // Clear any cached discount data to ensure fresh data is retrieved...
         unset($this->discount, $this->discounts);
     }
 
@@ -1494,7 +1499,7 @@ class Subscription extends Model
             'discounts' => [['promotion_code' => $promotionCodeId]],
         ]);
 
-        // Clear any cached discount data to ensure fresh data is retrieved
+        // Clear any cached discount data to ensure fresh data is retrieved...
         unset($this->discount, $this->discounts);
     }
 

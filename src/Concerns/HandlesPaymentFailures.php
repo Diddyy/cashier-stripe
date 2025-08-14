@@ -59,9 +59,9 @@ trait HandlesPaymentFailures
                         $paymentIntent = $e->payment->asStripePaymentIntent();
                     }
 
-                    // Since invoice field is no longer available on payment intent,
-                    // we need to refresh the subscription directly
+                    // Since the invoice field is no longer available on payment intent, we need to refresh the subscription directly...
                     $stripeSubscription = $subscription->asStripeSubscription();
+
                     $subscription->fill([
                         'stripe_status' => $stripeSubscription->status,
                     ])->save();

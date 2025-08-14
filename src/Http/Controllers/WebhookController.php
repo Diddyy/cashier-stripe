@@ -307,6 +307,7 @@ class WebhookController extends Controller
                     );
 
                     $payment = new Payment($paymentIntent);
+
                     $user->notify(new $notification($payment));
                 }
             }

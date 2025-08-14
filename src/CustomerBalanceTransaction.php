@@ -81,6 +81,46 @@ class CustomerBalanceTransaction
     }
 
     /**
+     * Get the balance type of the transaction.
+     *
+     * @return string|null
+     */
+    public function balanceType()
+    {
+        return $this->transaction->balance_type;
+    }
+
+    /**
+     * Get the checkout session ID for this transaction.
+     *
+     * @return string|null
+     */
+    public function checkoutSession()
+    {
+        return $this->transaction->checkout_session;
+    }
+
+    /**
+     * Determine if this transaction is a checkout session subscription payment.
+     *
+     * @return bool
+     */
+    public function isCheckoutSessionSubscriptionPayment()
+    {
+        return $this->transaction->balance_type === 'checkout_session_subscription_payment';
+    }
+
+    /**
+     * Determine if this transaction is a canceled checkout session subscription payment.
+     *
+     * @return bool
+     */
+    public function isCheckoutSessionSubscriptionPaymentCanceled()
+    {
+        return $this->transaction->balance_type === 'checkout_session_subscription_payment_canceled';
+    }
+
+    /**
      * Format the given amount into a displayable currency.
      *
      * @param  int  $amount
@@ -154,45 +194,5 @@ class CustomerBalanceTransaction
     public function __get($key)
     {
         return $this->transaction->{$key};
-    }
-
-    /**
-     * Get the balance type of the transaction.
-     *
-     * @return string|null
-     */
-    public function balanceType()
-    {
-        return $this->transaction->balance_type;
-    }
-
-    /**
-     * Get the checkout session ID for this transaction.
-     *
-     * @return string|null
-     */
-    public function checkoutSession()
-    {
-        return $this->transaction->checkout_session;
-    }
-
-    /**
-     * Determine if this transaction is a checkout session subscription payment.
-     *
-     * @return bool
-     */
-    public function isCheckoutSessionSubscriptionPayment()
-    {
-        return $this->transaction->balance_type === 'checkout_session_subscription_payment';
-    }
-
-    /**
-     * Determine if this transaction is a canceled checkout session subscription payment.
-     *
-     * @return bool
-     */
-    public function isCheckoutSessionSubscriptionPaymentCanceled()
-    {
-        return $this->transaction->balance_type === 'checkout_session_subscription_payment_canceled';
     }
 }

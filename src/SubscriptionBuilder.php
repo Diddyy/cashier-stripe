@@ -355,8 +355,8 @@ class SubscriptionBuilder
                 'stripe_id' => $item->id,
                 'stripe_product' => $item->price->product,
                 'stripe_price' => $item->price->id,
-                'quantity' => $item->quantity ?? null,
                 'meter_id' => $meterId,
+                'quantity' => $item->quantity ?? null,
                 'meter_event_name' => $meterEventName,
             ]);
         }
@@ -448,13 +448,14 @@ class SubscriptionBuilder
             'off_session' => true,
         ]);
 
-        // Apply discounts using new discounts array (supports multiple discounts)
+        // Apply discounts using new discounts array (supports multiple discounts)...
         if ($this->couponId || $this->promotionCodeId) {
             $discounts = [];
 
             if ($this->couponId) {
-                // Validate the coupon before applying
+                // Validate the coupon before applying...
                 $this->validateCouponForSubscriptionApplication($this->couponId);
+
                 $discounts[] = ['coupon' => $this->couponId];
             }
 
@@ -514,16 +515,6 @@ class SubscriptionBuilder
     }
 
     /**
-     * Get the items set on the subscription builder.
-     *
-     * @return array
-     */
-    public function getItems()
-    {
-        return $this->items;
-    }
-
-    /**
      * Validate that a coupon can be applied to a subscription.
      *
      * @param  string  $couponId
@@ -538,10 +529,21 @@ class SubscriptionBuilder
         $couponsService = $this->owner::stripe()->coupons;
 
         $stripeCoupon = $couponsService->retrieve($couponId);
+
         $coupon = new Coupon($stripeCoupon);
 
         if ($coupon->isForeverAmountOff()) {
             throw InvalidCoupon::cannotApplyForeverAmountOffToSubscription($couponId);
         }
+    }
+
+    /**
+     * Get the items set on the subscription builder.
+     *
+     * @return array
+     */
+    public function getItems()
+    {
+        return $this->items;
     }
 }
