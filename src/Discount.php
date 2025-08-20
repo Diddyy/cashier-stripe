@@ -3,6 +3,7 @@
 namespace Laravel\Cashier;
 
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
@@ -12,21 +13,14 @@ use Stripe\PromotionCode as StripePromotionCode;
 class Discount implements Arrayable, Jsonable, JsonSerializable
 {
     /**
-     * The Stripe Discount instance.
-     *
-     * @var \Stripe\Discount
-     */
-    protected $discount;
-
-    /**
      * Create a new Discount instance.
      *
      * @param  \Stripe\Discount  $discount
      * @return void
      */
-    public function __construct(StripeDiscount $discount)
+    public function __construct(protected StripeDiscount $discount)
     {
-        $this->discount = $discount;
+        //
     }
 
     /**
@@ -34,7 +28,7 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
      *
      * @return \Laravel\Cashier\Coupon
      */
-    public function coupon()
+    public function coupon(): Coupon
     {
         return new Coupon($this->discount->coupon);
     }
@@ -44,7 +38,7 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
      *
      * @return \Laravel\Cashier\PromotionCode|null
      */
-    public function promotionCode()
+    public function promotionCode(): ?PromotionCode
     {
         if (is_null($this->discount->promotion_code)) {
             return null;
@@ -68,9 +62,9 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get the date that the coupon was applied.
      *
-     * @return \Carbon\Carbon
+     * @return \Carbon\CarbonInterface
      */
-    public function start()
+    public function start(): CarbonInterface
     {
         return Carbon::createFromTimestamp($this->discount->start);
     }
@@ -78,13 +72,15 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get the date that this discount will end.
      *
-     * @return \Carbon\Carbon|null
+     * @return \Carbon\CarbonInterface|null
      */
-    public function end()
+    public function end(): ?CarbonInterface
     {
         if (! is_null($this->discount->end)) {
             return Carbon::createFromTimestamp($this->discount->end);
         }
+
+        return null;
     }
 
     /**
@@ -135,7 +131,7 @@ class Discount implements Arrayable, Jsonable, JsonSerializable
      * @param  string  $key
      * @return mixed
      */
-    public function __get($key)
+    public function __get(string $key)
     {
         return $this->discount->{$key};
     }

@@ -10,21 +10,14 @@ use Stripe\PromotionCode as StripePromotionCode;
 class PromotionCode implements Arrayable, Jsonable, JsonSerializable
 {
     /**
-     * The Stripe PromotionCode instance.
-     *
-     * @var \Stripe\PromotionCode
-     */
-    protected $promotionCode;
-
-    /**
      * Create a new PromotionCode instance.
      *
      * @param  \Stripe\PromotionCode  $promotionCode
      * @return void
      */
-    public function __construct(StripePromotionCode $promotionCode)
+    public function __construct(protected StripePromotionCode $promotionCode)
     {
-        $this->promotionCode = $promotionCode;
+        //
     }
 
     /**
@@ -32,7 +25,7 @@ class PromotionCode implements Arrayable, Jsonable, JsonSerializable
      *
      * @return \Laravel\Cashier\Coupon
      */
-    public function coupon()
+    public function coupon(): Coupon
     {
         return new Coupon($this->promotionCode->coupon);
     }
@@ -42,7 +35,7 @@ class PromotionCode implements Arrayable, Jsonable, JsonSerializable
      *
      * @return \Stripe\PromotionCode
      */
-    public function asStripePromotionCode()
+    public function asStripePromotionCode(): StripePromotionCode
     {
         return $this->promotionCode;
     }
@@ -85,7 +78,7 @@ class PromotionCode implements Arrayable, Jsonable, JsonSerializable
      * @param  string  $key
      * @return mixed
      */
-    public function __get($key)
+    public function __get(string $key)
     {
         return $this->promotionCode->{$key};
     }

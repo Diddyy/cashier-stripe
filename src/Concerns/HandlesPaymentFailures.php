@@ -15,14 +15,14 @@ trait HandlesPaymentFailures
      *
      * @var bool
      */
-    protected $confirmIncompletePayment = true;
+    protected bool $confirmIncompletePayment = true;
 
     /**
      * The options to be used when confirming a payment intent.
      *
      * @var array
      */
-    protected $paymentConfirmationOptions = [];
+    protected array $paymentConfirmationOptions = [];
 
     /**
      * Handle a failed payment for the given subscription.
@@ -35,7 +35,7 @@ trait HandlesPaymentFailures
      *
      * @internal
      */
-    public function handlePaymentFailure(Subscription $subscription, $paymentMethod = null)
+    public function handlePaymentFailure(Subscription $subscription, $paymentMethod = null): void
     {
         if ($this->confirmIncompletePayment && $subscription->hasIncompletePayment()) {
             try {
