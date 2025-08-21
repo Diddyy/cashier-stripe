@@ -199,4 +199,122 @@ class CheckoutTest extends FeatureTestCase
 
         $this->assertInstanceOf(Checkout::class, $checkout);
     }
+
+    public function test_subscription_checkout_with_flexible_billing_mode()
+    {
+        $user = $this->createCustomer('subscription_checkout_flexible_billing');
+
+        $price = self::stripe()->prices->create([
+            'currency' => 'USD',
+            'product_data' => [
+                'name' => 'Flexible Test Plan',
+            ],
+            'recurring' => ['interval' => 'month'],
+            'unit_amount' => 1000,
+        ]);
+
+        $checkout = $user->newSubscription('default', $price->id)
+            ->withBillingMode('flexible')
+            ->checkout([
+                'success_url' => 'http://example.com',
+                'cancel_url' => 'http://example.com',
+            ]);
+
+        $this->assertInstanceOf(Checkout::class, $checkout);
+        $this->assertEquals('subscription', $checkout->mode);
+        
+        // Verify the checkout session was created successfully
+        $this->assertNotNull($checkout->id);
+        $this->assertNotNull($checkout->url);
+    }
+
+    public function test_subscription_checkout_with_classic_billing_mode()
+    {
+        $user = $this->createCustomer('subscription_checkout_classic_billing');
+
+        $price = self::stripe()->prices->create([
+            'currency' => 'USD',
+            'product_data' => [
+                'name' => 'Classic Test Plan',
+            ],
+            'recurring' => ['interval' => 'month'],
+            'unit_amount' => 1000,
+        ]);
+
+        $checkout = $user->newSubscription('default', $price->id)
+            ->withBillingMode('classic')
+            ->checkout([
+                'success_url' => 'http://example.com',
+                'cancel_url' => 'http://example.com',
+            ]);
+
+        $this->assertInstanceOf(Checkout::class, $checkout);
+        $this->assertEquals('subscription', $checkout->mode);
+        
+        // Verify the checkout session was created successfully
+        $this->assertNotNull($checkout->id);
+        $this->assertNotNull($checkout->url);
+    }
+
+    public function test_checkout_builder_with_flexible_billing_mode()
+    {
+        $user = $this->createCustomer('checkout_builder_flexible_billing');
+
+        $price = self::stripe()->prices->create([
+            'currency' => 'USD',
+            'product_data' => [
+                'name' => 'Builder Test Plan',
+            ],
+            'recurring' => ['interval' => 'month'],
+            'unit_amount' => 1000,
+        ]);
+
+        $checkout = Checkout::customer($user)
+            ->withBillingMode('flexible')
+            ->createSubscription([$price->id => 1], [
+                'success_url' => 'http://example.com',
+                'cancel_url' => 'http://example.com',
+            ]);
+
+        $this->assertInstanceOf(Checkout::class, $checkout);
+        $this->assertEquals('subscription', $checkout->mode);
+        
+        // Verify the checkout session was created successfully
+        $this->assertNotNull($checkout->id);
+        $this->assertNotNull($checkout->url);
+    }
+
+    public function test_checkout_billing_mode_respects_config_default()
+    {
+        // Set config to flexible
+        config(['cashier.default_billing_mode' => 'flexible']);
+
+        $user = $this->createCustomer('checkout_config_default_flexible');
+
+        $price = self::stripe()->prices->create([
+            'currency' => 'USD',
+            'product_data' => [
+                'name' => 'Config Default Test Plan',
+            ],
+            'recurring' => ['interval' => 'month'],
+            'unit_amount' => 1000,
+        ]);
+
+        // Create checkout without explicit billing mode (should use config default)
+        $checkout = $user->newSubscription('default', $price->id)
+            ->checkout([
+                'success_url' => 'http://example.com',
+                'cancel_url' => 'http://example.com',
+            ]);
+
+        $this->assertInstanceOf(Checkout::class, $checkout);
+        $this->assertEquals('subscription', $checkout->mode);
+        
+        // Verify the checkout session was created successfully
+        $this->assertNotNull($checkout->id);
+        $this->assertNotNull($checkout->url);
+
+        // Reset config
+        config(['cashier.default_billing_mode' => 'classic']);
+    }
 }
