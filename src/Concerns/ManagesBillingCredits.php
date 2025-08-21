@@ -2,7 +2,6 @@
 
 namespace Laravel\Cashier\Concerns;
 
-use Illuminate\Support\Collection;
 use Laravel\Cashier\CustomerBalanceTransaction;
 
 trait ManagesBillingCredits

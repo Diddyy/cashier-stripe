@@ -125,13 +125,12 @@ class Quote extends Model
      */
     public function subscription(): ?\Laravel\Cashier\Subscription
     {
-        if (!$this->accepted()) {
+        if (! $this->accepted()) {
             return null;
         }
 
         $stripeQuote = $this->asStripeQuote(['subscription']);
-        
-        if (!$stripeQuote->subscription) {
+        if (! $stripeQuote->subscription) {
             return null;
         }
 
@@ -147,13 +146,13 @@ class Quote extends Model
      */
     public function subscriptionSchedule()
     {
-        if (!$this->accepted()) {
+        if (! $this->accepted()) {
             return null;
         }
 
         $stripeQuote = $this->asStripeQuote(['subscription_schedule']);
-        
-        if (!$stripeQuote->subscription_schedule) {
+
+        if (! $stripeQuote->subscription_schedule) {
             return null;
         }
 
@@ -162,20 +161,20 @@ class Quote extends Model
             ->first();
     }
 
-        /**
+    /**
      * Get the invoice created from this quote (if accepted as one-time payment).
      *
      * @return \Laravel\Cashier\Invoice|null
      */
     public function invoice()
     {
-        if (!$this->accepted()) {
+        if (! $this->accepted()) {
             return null;
         }
 
         $stripeQuote = $this->asStripeQuote(['invoice']);
 
-        if (!$stripeQuote->invoice) {
+        if (! $stripeQuote->invoice) {
             return null;
         }
 
@@ -190,6 +189,7 @@ class Quote extends Model
     public function number()
     {
         $stripeQuote = $this->asStripeQuote();
+
         return $stripeQuote->number ?? null;
     }
 
@@ -202,6 +202,7 @@ class Quote extends Model
     public function formattedNumber($format = 'QT-%s')
     {
         $number = $this->number();
+
         return $number ? sprintf($format, $number) : null;
     }
 
@@ -213,9 +214,9 @@ class Quote extends Model
     public function hasCustomNumber()
     {
         $stripeQuote = $this->asStripeQuote();
-        
+
         // Check if the number was explicitly set (non-null and not auto-generated)
-        return !empty($stripeQuote->number);
+        return ! empty($stripeQuote->number);
     }
 
     /**
@@ -229,13 +230,13 @@ class Quote extends Model
     {
         // Search through the owner's quotes to find one with matching number
         $quotes = $owner->quotes;
-        
+
         foreach ($quotes as $quote) {
             if ($quote->number() === $number) {
                 return $quote;
             }
         }
-        
+
         return null;
     }
 
@@ -246,7 +247,7 @@ class Quote extends Model
      */
     public function generateReference()
     {
-        return 'quote_' . $this->id . '_' . substr($this->stripe_id, -8);
+        return 'quote_'.$this->id.'_'.substr($this->stripe_id, -8);
     }
 
     /**
@@ -385,6 +386,7 @@ class Quote extends Model
         // Classic mode is Stripe's default, so we omit it for backwards compatibility
         if ($effectiveMode === 'flexible') {
             $this->validateFlexibleBillingSupport();
+
             return ['type' => 'flexible'];
         }
 
@@ -399,11 +401,11 @@ class Quote extends Model
     protected function validateFlexibleBillingSupport(): void
     {
         $apiVersion = config('cashier.stripe.api_version') ?? \Stripe\Stripe::getApiVersion();
-        
+
         if ($apiVersion && version_compare($apiVersion, '2025-06-30', '<')) {
             throw new \InvalidArgumentException(
-                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. ' .
-                'Current version: ' . $apiVersion . '. Please update your API version.'
+                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. '.
+                'Current version: '.$apiVersion.'. Please update your API version.'
             );
         }
     }

@@ -176,7 +176,7 @@ class RateCard extends Model
             }
         }
 
-        if (!$applicableTier) {
+        if (! $applicableTier) {
             $applicableTier = end($tiers);
         }
 
@@ -213,7 +213,9 @@ class RateCard extends Model
         $previousLimit = 0;
 
         foreach ($tiers as $index => $tier) {
-            if ($remainingUsage <= 0) break;
+            if ($remainingUsage <= 0) {
+                break;
+            }
 
             $tierLimit = $tier['up_to'] ?? PHP_INT_MAX;
             $tierUsage = min($remainingUsage, $tierLimit - $previousLimit);
@@ -263,7 +265,7 @@ class RateCard extends Model
     {
         $packageSize = $this->rates['package_size'] ?? 1;
         $packagePrice = $this->rates['package_price'] ?? 0;
-        
+
         $packagesUsed = ceil($usage / $packageSize);
         $totalAmount = $packagesUsed * $packagePrice;
 
@@ -395,7 +397,7 @@ class RateCard extends Model
     public function compareAgainst(int $usage, array $otherRateCardIds): array
     {
         $comparisons = [];
-        
+
         // Calculate for this rate card
         $thisCalculation = $this->calculatePricing($usage);
         $comparisons[] = array_merge($thisCalculation, [
@@ -412,7 +414,7 @@ class RateCard extends Model
         }
 
         // Sort by total amount
-        usort($comparisons, fn($a, $b) => $a['total_amount'] <=> $b['total_amount']);
+        usort($comparisons, fn ($a, $b) => $a['total_amount'] <=> $b['total_amount']);
 
         return [
             'usage' => $usage,
@@ -527,10 +529,10 @@ class RateCard extends Model
         $previous = $index > 0 ? ($this->rates['tiers'][$index - 1]['up_to'] ?? 0) : 0;
 
         if ($upTo === null) {
-            return ($previous + 1) . '+';
+            return ($previous + 1).'+';
         }
 
-        return ($previous + 1) . ' - ' . $upTo;
+        return ($previous + 1).' - '.$upTo;
     }
 
     /**
@@ -541,7 +543,7 @@ class RateCard extends Model
      */
     protected function formatPrice(int $amount): string
     {
-        return ($this->currency === 'usd' ? '$' : strtoupper($this->currency) . ' ') . 
+        return ($this->currency === 'usd' ? '$' : strtoupper($this->currency).' ').
                number_format($amount / 100, 2);
     }
 }

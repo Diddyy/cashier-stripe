@@ -69,7 +69,7 @@ class QuoteTest extends TestCase
     public function test_quote_status_checks()
     {
         $quote = new Quote();
-        
+
         // Test draft status
         $quote->status = 'draft';
         $this->assertTrue($quote->draft());
@@ -129,28 +129,28 @@ class QuoteTest extends TestCase
     public function test_quote_number_methods()
     {
         $quote = new Quote();
-        
+
         // Mock asStripeQuote method
         $mockStripeQuote = new TestStripeQuote();
         $mockStripeQuote->number = 'QT001';
-        
+
         $quote = $this->getMockBuilder(Quote::class)
             ->onlyMethods(['asStripeQuote'])
             ->getMock();
-        
+
         $quote->expects($this->any())
             ->method('asStripeQuote')
             ->willReturn($mockStripeQuote);
-        
+
         // Test number() method
         $this->assertEquals('QT001', $quote->number());
-        
+
         // Test formattedNumber() method with default format
         $this->assertEquals('QT-QT001', $quote->formattedNumber());
-        
+
         // Test formattedNumber() method with custom format
         $this->assertEquals('Quote #QT001', $quote->formattedNumber('Quote #%s'));
-        
+
         // Test hasCustomNumber() method
         $this->assertTrue($quote->hasCustomNumber());
     }
@@ -159,21 +159,21 @@ class QuoteTest extends TestCase
     {
         $mockStripeQuote = new TestStripeQuote();
         $mockStripeQuote->number = null;
-        
+
         $quote = $this->getMockBuilder(Quote::class)
             ->onlyMethods(['asStripeQuote'])
             ->getMock();
-        
+
         $quote->expects($this->any())
             ->method('asStripeQuote')
             ->willReturn($mockStripeQuote);
-        
+
         // Test number() method returns null
         $this->assertNull($quote->number());
-        
+
         // Test formattedNumber() method returns null
         $this->assertNull($quote->formattedNumber());
-        
+
         // Test hasCustomNumber() method returns false
         $this->assertFalse($quote->hasCustomNumber());
     }
@@ -183,9 +183,9 @@ class QuoteTest extends TestCase
         $quote = new Quote();
         $quote->id = 123;
         $quote->stripe_id = 'qt_1234567890abcdef';
-        
+
         $reference = $quote->generateReference();
-        
+
         $this->assertEquals('quote_123_90abcdef', $reference);
     }
 
@@ -193,7 +193,7 @@ class QuoteTest extends TestCase
     {
         $quote = new Quote();
         $quote->status = 'draft';
-        
+
         $this->assertNull($quote->subscription());
         $this->assertNull($quote->subscriptionSchedule());
         $this->assertNull($quote->invoice());
@@ -204,24 +204,24 @@ class QuoteTest extends TestCase
         $mockOwner = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['quotes'])
             ->getMock();
-        
+
         $quote1 = $this->getMockBuilder(Quote::class)
             ->onlyMethods(['number'])
             ->getMock();
         $quote1->method('number')->willReturn('QT001');
-        
+
         $quote2 = $this->getMockBuilder(Quote::class)
             ->onlyMethods(['number'])
             ->getMock();
         $quote2->method('number')->willReturn('QT002');
-        
+
         $quotes = collect([$quote1, $quote2]);
         $mockOwner->quotes = $quotes;
-        
+
         // Test finding existing quote
         $foundQuote = Quote::findByNumber($mockOwner, 'QT002');
         $this->assertSame($quote2, $foundQuote);
-        
+
         // Test finding non-existing quote
         $notFoundQuote = Quote::findByNumber($mockOwner, 'QT999');
         $this->assertNull($notFoundQuote);
@@ -231,7 +231,7 @@ class QuoteTest extends TestCase
 class TestStripeQuote extends \Stripe\Quote
 {
     public $number;
-    
+
     public function __construct()
     {
         // Skip parent constructor to avoid API calls

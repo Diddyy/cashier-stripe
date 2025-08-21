@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('current_phase_started_at')->nullable();
             $table->timestamp('current_phase_ends_at')->nullable();
             $table->timestamp('canceled_at')->nullable();
-            $table->timestamp('completed_at')->nullable(); 
+            $table->timestamp('completed_at')->nullable();
             $table->timestamp('released_at')->nullable();
             $table->json('metadata')->nullable();
             $table->timestamps();

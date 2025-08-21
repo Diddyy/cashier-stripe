@@ -14,7 +14,6 @@ use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
 use Laravel\Cashier\Payment;
 use Laravel\Cashier\Quote;
 use Laravel\Cashier\Subscription;
-use Laravel\Cashier\SubscriptionSchedule;
 use Stripe\Stripe;
 use Stripe\Subscription as StripeSubscription;
 use Symfony\Component\HttpFoundation\Response;
@@ -332,7 +331,7 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeQuote['customer'])) {
             $quote = $customer->quotes()->where('stripe_id', $stripeQuote['id'])->first();
-            
+
             if ($quote) {
                 $quote->syncWithStripe();
             }
@@ -353,15 +352,15 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeQuote['customer'])) {
             $quote = $customer->quotes()->where('stripe_id', $stripeQuote['id'])->first();
-            
+
             if ($quote) {
                 $quote->syncWithStripe();
-                
+
                 // Handle subscription creation if quote creates a subscription
                 if (isset($stripeQuote['subscription']) && $stripeQuote['subscription']) {
                     // Sync subscription state - will be handled by subscription webhooks
                 }
-                
+
                 // Handle subscription schedule creation if quote creates a schedule
                 if (isset($stripeQuote['subscription_schedule']) && $stripeQuote['subscription_schedule']) {
                     // Sync subscription schedule state - will be handled by subscription schedule webhooks
@@ -384,7 +383,7 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeQuote['customer'])) {
             $quote = $customer->quotes()->where('stripe_id', $stripeQuote['id'])->first();
-            
+
             if ($quote) {
                 $quote->syncWithStripe();
             }
@@ -429,7 +428,6 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeSchedule['customer'])) {
             $schedule = $customer->subscriptionSchedules()->where('stripe_id', $stripeSchedule['id'])->first();
-            
             if ($schedule) {
                 $schedule->syncWithStripe();
             }
@@ -450,7 +448,6 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeSchedule['customer'])) {
             $schedule = $customer->subscriptionSchedules()->where('stripe_id', $stripeSchedule['id'])->first();
-            
             if ($schedule) {
                 $schedule->syncWithStripe();
             }
@@ -471,7 +468,6 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeSchedule['customer'])) {
             $schedule = $customer->subscriptionSchedules()->where('stripe_id', $stripeSchedule['id'])->first();
-            
             if ($schedule) {
                 $schedule->syncWithStripe();
             }
@@ -492,7 +488,6 @@ class WebhookController extends Controller
 
         if ($customer = $this->getUserByStripeId($stripeSchedule['customer'])) {
             $schedule = $customer->subscriptionSchedules()->where('stripe_id', $stripeSchedule['id'])->first();
-            
             if ($schedule) {
                 $schedule->syncWithStripe();
             }

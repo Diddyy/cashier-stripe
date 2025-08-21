@@ -32,10 +32,10 @@ class CheckoutBuilder
      * @param  object|null  $parentInstance
      * @return void
      */
-    public function __construct(protected $owner = null, ?object $parentInstance = null)
+    public function __construct($owner = null, ?object $parentInstance = null)
     {
         $this->owner = $owner;
-      
+
         if ($parentInstance && in_array(AllowsCoupons::class, class_uses_recursive($parentInstance))) {
             $this->couponId = $parentInstance->couponId;
             $this->promotionCodeId = $parentInstance->promotionCodeId;
@@ -124,6 +124,7 @@ class CheckoutBuilder
         // Classic mode is Stripe's default, so we omit it for backwards compatibility
         if ($effectiveMode === 'flexible') {
             $this->validateFlexibleBillingSupport();
+
             return ['type' => 'flexible'];
         }
 
@@ -140,11 +141,11 @@ class CheckoutBuilder
     protected function validateFlexibleBillingSupport()
     {
         $apiVersion = config('cashier.stripe.api_version') ?? \Stripe\Stripe::getApiVersion();
-        
+
         if ($apiVersion && version_compare($apiVersion, '2025-06-30', '<')) {
             throw new \InvalidArgumentException(
-                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. ' .
-                'Current version: ' . $apiVersion . '. Please update your API version.'
+                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. '.
+                'Current version: '.$apiVersion.'. Please update your API version.'
             );
         }
     }

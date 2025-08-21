@@ -160,8 +160,8 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $mockStripeSchedule = new \stdClass();
         $mockStripeSchedule->phases = new \stdClass();
         $mockStripeSchedule->phases->data = [
-            (object)['items' => ['price_1'], 'start_date' => 1640995200],
-            (object)['items' => ['price_2'], 'start_date' => 1641081600],
+            (object) ['items' => ['price_1'], 'start_date' => 1640995200],
+            (object) ['items' => ['price_2'], 'start_date' => 1641081600],
         ];
         
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
@@ -181,7 +181,7 @@ class SubscriptionScheduleAdvancedTest extends TestCase
     public function test_subscription_schedule_current_phase()
     {
         $mockStripeSchedule = new \stdClass();
-        $mockStripeSchedule->current_phase = (object)[
+        $mockStripeSchedule->current_phase = (object) [
             'items' => ['price_current'],
             'start_date' => 1640995200,
             'end_date' => 1641081600,
@@ -211,9 +211,9 @@ class SubscriptionScheduleAdvancedTest extends TestCase
             ->getMock();
         
         $phases = [
-            (object)['start_date' => $currentTime - 3600], // Past phase
-            (object)['start_date' => $futureTime], // Future phase
-            (object)['start_date' => $futureTime + 3600], // Another future phase
+            (object) ['start_date' => $currentTime - 3600], // Past phase
+            (object) ['start_date' => $futureTime], // Future phase
+            (object) ['start_date' => $futureTime + 3600], // Another future phase
         ];
         
         $schedule->method('phases')->willReturn($phases);
@@ -249,8 +249,8 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $mockStripeSchedule = new \stdClass();
         $mockStripeSchedule->phases = new \stdClass();
         $mockStripeSchedule->phases->data = [
-            (object)['items' => ['price_1'], 'iterations' => 1],
-            (object)['items' => ['price_2'], 'iterations' => 1],
+            (object) ['items' => ['price_1'], 'iterations' => 1],
+            (object) ['items' => ['price_2'], 'iterations' => 1],
         ];
         
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)

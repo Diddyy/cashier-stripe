@@ -8,7 +8,6 @@ use Stripe\CustomerBalanceTransaction as StripeCustomerBalanceTransaction;
 
 class BillingCreditsTest extends TestCase
 {
-
     public function test_billing_credit_balance()
     {
         $billable = new TestBillableForCredits();
@@ -78,36 +77,37 @@ class BillingCreditsTest extends TestCase
 class TestBillableForCredits
 {
     use \Laravel\Cashier\Concerns\ManagesBillingCredits;
-    
+
     protected $balance = [];
-    
+
     public function assertCustomerExists()
     {
         // Mock implementation
     }
-    
+
     public function stripeId()
     {
         return 'cus_test123';
     }
-    
+
     public function getKey()
     {
         return 'user_123';
     }
-    
+
     public function asStripeCustomer()
     {
         $customer = new TestStripeCustomer();
         $customer->balance = $this->balance;
+
         return $customer;
     }
-    
+
     public function stripe()
     {
         return new \stdClass(); // Simple mock for now
     }
-    
+
     public function setBalance(array $balance)
     {
         $this->balance = $balance;

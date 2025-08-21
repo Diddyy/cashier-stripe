@@ -163,7 +163,7 @@ class SubscriptionScheduleBuilderTest extends TestCase
     public function test_subscription_schedule_builder_phase_limit_validation()
     {
         $builder = new SubscriptionScheduleBuilder(new User);
-        
+
         // Add 10 phases (maximum allowed)
         for ($i = 0; $i < 10; $i++) {
             $builder->addPhase([
@@ -171,11 +171,11 @@ class SubscriptionScheduleBuilderTest extends TestCase
                 'iterations' => 1,
             ]);
         }
-        
+
         // 11th phase should throw exception
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Subscription schedules can have a maximum of 10 phases.');
-        
+
         $builder->addPhase([
             'items' => [['price' => 'price_test', 'quantity' => 1]],
             'iterations' => 1,
@@ -185,7 +185,7 @@ class SubscriptionScheduleBuilderTest extends TestCase
     public function test_subscription_schedule_builder_phases_method_validation()
     {
         $builder = new SubscriptionScheduleBuilder(new User);
-        
+
         // Create 11 phases to test validation
         $phases = [];
         for ($i = 0; $i < 11; $i++) {
@@ -194,28 +194,28 @@ class SubscriptionScheduleBuilderTest extends TestCase
                 'iterations' => 1,
             ];
         }
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Subscription schedules can have a maximum of 10 phases.');
-        
+
         $builder->phases($phases);
     }
 
     public function test_subscription_schedule_builder_add_phase_with_proration()
     {
         $items = [['price' => 'price_test', 'quantity' => 1]];
-        
+
         $builder = new SubscriptionScheduleBuilder(new User);
         $result = $builder->addPhaseWithProration($items, 'create_prorations');
-        
+
         // Should return builder for method chaining
         $this->assertSame($builder, $result);
-        
+
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
         $property->setAccessible(true);
-        
+
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
         $this->assertEquals('create_prorations', $phases[0]['proration_behavior']);
@@ -226,10 +226,10 @@ class SubscriptionScheduleBuilderTest extends TestCase
     {
         $builder = new SubscriptionScheduleBuilder(new User);
         $items = [['price' => 'price_test', 'quantity' => 1]];
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid proration behavior. Must be one of: create_prorations, none, always_invoice');
-        
+
         $builder->addPhaseWithProration($items, 'invalid_behavior');
     }
 
@@ -237,18 +237,18 @@ class SubscriptionScheduleBuilderTest extends TestCase
     {
         $items = [['price' => 'price_test', 'quantity' => 1]];
         $metadata = ['phase' => 'trial', 'duration' => '30_days'];
-        
+
         $builder = new SubscriptionScheduleBuilder(new User);
         $result = $builder->addPhaseWithMetadata($items, $metadata);
-        
+
         // Should return builder for method chaining
         $this->assertSame($builder, $result);
-        
+
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
         $property->setAccessible(true);
-        
+
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
         $this->assertEquals($metadata, $phases[0]['metadata']);
@@ -259,18 +259,18 @@ class SubscriptionScheduleBuilderTest extends TestCase
     {
         $items = [['price' => 'price_test', 'quantity' => 1]];
         $trialEnd = new \DateTime('2025-01-31');
-        
+
         $builder = new SubscriptionScheduleBuilder(new User);
         $result = $builder->addTrialPhase($items, $trialEnd);
-        
+
         // Should return builder for method chaining
         $this->assertSame($builder, $result);
-        
+
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
         $property->setAccessible(true);
-        
+
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
         $this->assertEquals($trialEnd->getTimestamp(), $phases[0]['trial_end']);
@@ -281,18 +281,18 @@ class SubscriptionScheduleBuilderTest extends TestCase
     {
         $items = [['price' => 'price_test', 'quantity' => 1]];
         $trialEndTimestamp = 1738281600; // 2025-01-31
-        
+
         $builder = new SubscriptionScheduleBuilder(new User);
         $result = $builder->addTrialPhase($items, $trialEndTimestamp);
-        
+
         // Should return builder for method chaining
         $this->assertSame($builder, $result);
-        
+
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
         $property->setAccessible(true);
-        
+
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
         $this->assertEquals($trialEndTimestamp, $phases[0]['trial_end']);
@@ -307,18 +307,18 @@ class SubscriptionScheduleBuilderTest extends TestCase
             'metadata' => ['type' => 'discount_phase'],
             'automatic_tax' => ['enabled' => true],
         ];
-        
+
         $builder = new SubscriptionScheduleBuilder(new User);
         $result = $builder->addPhaseWithOptions($items, $options);
-        
+
         // Should return builder for method chaining
         $this->assertSame($builder, $result);
-        
+
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
         $property->setAccessible(true);
-        
+
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
         $this->assertEquals($items, $phases[0]['items']);

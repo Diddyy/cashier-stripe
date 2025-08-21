@@ -4,8 +4,6 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use DateTimeInterface;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Laravel\Cashier\Concerns\HandlesTaxes;

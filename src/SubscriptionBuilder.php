@@ -578,6 +578,7 @@ class SubscriptionBuilder
         // Classic mode is Stripe's default, so we omit it for backwards compatibility
         if ($effectiveMode === 'flexible') {
             $this->validateFlexibleBillingSupport();
+
             return ['type' => 'flexible'];
         }
 
@@ -594,11 +595,11 @@ class SubscriptionBuilder
     protected function validateFlexibleBillingSupport()
     {
         $apiVersion = config('cashier.stripe.api_version') ?? \Stripe\Stripe::getApiVersion();
-        
+
         if ($apiVersion && version_compare($apiVersion, '2025-06-30', '<')) {
             throw new \InvalidArgumentException(
-                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. ' .
-                'Current version: ' . $apiVersion . '. Please update your API version.'
+                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. '.
+                'Current version: '.$apiVersion.'. Please update your API version.'
             );
         }
 
@@ -618,13 +619,13 @@ class SubscriptionBuilder
         // Check for incompatible billing thresholds
         if ($this->billingThresholds !== null) {
             throw new \InvalidArgumentException(
-                'Flexible billing mode is not compatible with billing thresholds. ' .
+                'Flexible billing mode is not compatible with billing thresholds. '.
                 'Remove billing thresholds before using flexible billing mode.'
             );
         }
 
         // Warn about trial limitations (flexible mode doesn't support paid trials)
-        if ($this->trialExpires && !$this->skipTrial) {
+        if ($this->trialExpires && ! $this->skipTrial) {
             // This is just a warning as free trials are supported, but paid trials are not
             // The actual validation would need to check if the trial is paid, which is complex
         }

@@ -4,7 +4,6 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use DateTimeInterface;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
@@ -362,6 +361,7 @@ class QuoteBuilder
 
             if (is_array($item) && isset($item['price'])) {
                 $item['quantity'] = $item['quantity'] ?? 1;
+
                 return $item;
             }
 
@@ -402,6 +402,7 @@ class QuoteBuilder
         // Classic mode is Stripe's default, so we omit it for backwards compatibility
         if ($effectiveMode === 'flexible') {
             $this->validateFlexibleBillingSupport();
+
             return ['type' => 'flexible'];
         }
 
@@ -418,11 +419,11 @@ class QuoteBuilder
     protected function validateFlexibleBillingSupport()
     {
         $apiVersion = config('cashier.stripe.api_version') ?? \Stripe\Stripe::getApiVersion();
-        
+
         if ($apiVersion && version_compare($apiVersion, '2025-06-30', '<')) {
             throw new \InvalidArgumentException(
-                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. ' .
-                'Current version: ' . $apiVersion . '. Please update your API version.'
+                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. '.
+                'Current version: '.$apiVersion.'. Please update your API version.'
             );
         }
     }

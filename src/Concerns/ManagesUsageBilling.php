@@ -92,7 +92,7 @@ trait ManagesUsageBilling
      * @param  string  $period
      * @param  array  $alertOptions
      * @return static
-     * 
+     *
      * @throws \InvalidArgumentException
      */
     public function setUsageThreshold(string $meterId, int $threshold, string $period = 'billing_cycle', array $alertOptions = []): static
@@ -105,7 +105,7 @@ trait ManagesUsageBilling
 
         $validPeriods = ['billing_cycle', 'monthly', 'daily', 'weekly'];
         if (! in_array($period, $validPeriods)) {
-            throw new \InvalidArgumentException('Invalid period. Must be one of: ' . implode(', ', $validPeriods));
+            throw new \InvalidArgumentException('Invalid period. Must be one of: '.implode(', ', $validPeriods));
         }
 
         $thresholdData = [

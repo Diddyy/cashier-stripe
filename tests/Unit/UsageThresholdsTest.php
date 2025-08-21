@@ -84,8 +84,8 @@ class UsageThresholdsTest extends TestCase
         $billable->setUsageThreshold('meter_123', 1000);
 
         $mockUsageSummaries = collect([
-            (object)['aggregated_value' => 200],
-            (object)['aggregated_value' => 300],
+            (object) ['aggregated_value' => 200],
+            (object) ['aggregated_value' => 300],
         ]);
 
         $billable->setMockUsageSummaries($mockUsageSummaries);
@@ -103,8 +103,8 @@ class UsageThresholdsTest extends TestCase
         $billable->setUsageThreshold('meter_123', 500, 'monthly');
 
         $mockUsageSummaries = collect([
-            (object)['aggregated_value' => 400],
-            (object)['aggregated_value' => 300],
+            (object) ['aggregated_value' => 400],
+            (object) ['aggregated_value' => 300],
         ]);
 
         $billable->setMockUsageSummaries($mockUsageSummaries);
@@ -127,7 +127,7 @@ class UsageThresholdsTest extends TestCase
         $billable->setUsageThreshold('meter_123', 1000);
 
         $mockUsageSummaries = collect([
-            (object)['aggregated_value' => 250],
+            (object) ['aggregated_value' => 250],
         ]);
 
         $billable->setMockUsageSummaries($mockUsageSummaries);
@@ -151,8 +151,8 @@ class UsageThresholdsTest extends TestCase
         $billable = $this->getMockBillableWithUsageBilling();
 
         $mockUsageSummaries = collect([
-            (object)['aggregated_value' => 100],
-            (object)['aggregated_value' => 200],
+            (object) ['aggregated_value' => 100],
+            (object) ['aggregated_value' => 200],
         ]);
 
         $billable->setMockUsageSummaries($mockUsageSummaries);

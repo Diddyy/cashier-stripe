@@ -3,7 +3,6 @@
 namespace Laravel\Cashier;
 
 use Carbon\Carbon;
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Cashier\Concerns\InteractsWithStripe;
 use Stripe\SubscriptionSchedule as StripeSubscriptionSchedule;
@@ -229,7 +228,7 @@ class SubscriptionSchedule extends Model
 
         $this->fill([
             'stripe_status' => $stripeSchedule->status,
-            'subscription_id' => $stripeSchedule->subscription 
+            'subscription_id' => $stripeSchedule->subscription
                 ? (is_object($stripeSchedule->subscription) ? $stripeSchedule->subscription->id : $stripeSchedule->subscription)
                 : null,
             'current_phase_started_at' => $currentPhase && isset($currentPhase->start_date)
@@ -247,7 +246,7 @@ class SubscriptionSchedule extends Model
             'released_at' => $stripeSchedule->released_at
                 ? Carbon::createFromTimestamp($stripeSchedule->released_at)
                 : null,
-            'metadata' => isset($stripeSchedule->metadata) && $stripeSchedule->metadata 
+            'metadata' => isset($stripeSchedule->metadata) && $stripeSchedule->metadata
                 ? (is_object($stripeSchedule->metadata) ? $stripeSchedule->metadata->toArray() : $stripeSchedule->metadata)
                 : null,
         ])->save();
@@ -275,7 +274,7 @@ class SubscriptionSchedule extends Model
      */
     public function upcomingInvoicePreview(array $options = [])
     {
-        if (!$this->active() && !$this->notStarted()) {
+        if (! $this->active() && ! $this->notStarted()) {
             throw new \InvalidArgumentException('Cannot preview invoices for inactive subscription schedules.');
         }
 
@@ -319,7 +318,7 @@ class SubscriptionSchedule extends Model
     {
         $schedule = $this->asStripeSubscriptionSchedule(['phases']);
         
-        if (!isset($schedule->phases[$phaseIndex])) {
+        if (! isset($schedule->phases[$phaseIndex])) {
             throw new \InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
         }
 
@@ -328,7 +327,7 @@ class SubscriptionSchedule extends Model
         // Calculate the preview date for this phase
         $previewDate = isset($phase->start_date) ? $phase->start_date : null;
         
-        if (!$previewDate) {
+        if (! $previewDate) {
             return null;
         }
 
@@ -358,6 +357,7 @@ class SubscriptionSchedule extends Model
     public function phases()
     {
         $schedule = $this->asStripeSubscriptionSchedule(['phases']);
+
         return $schedule->phases->data ?? [];
     }
 
@@ -369,6 +369,7 @@ class SubscriptionSchedule extends Model
     public function currentPhase()
     {
         $schedule = $this->asStripeSubscriptionSchedule(['current_phase']);
+
         return $schedule->current_phase ?? null;
     }
 
@@ -381,7 +382,7 @@ class SubscriptionSchedule extends Model
     {
         $phases = $this->phases();
         $currentTime = time();
-        
+
         return array_filter($phases, function ($phase) use ($currentTime) {
             return isset($phase->start_date) && $phase->start_date > $currentTime;
         });
@@ -398,8 +399,8 @@ class SubscriptionSchedule extends Model
     {
         $schedule = $this->asStripeSubscriptionSchedule(['phases']);
         $phases = $schedule->phases->data ?? [];
-        
-        if (!isset($phases[$phaseIndex])) {
+
+        if (! isset($phases[$phaseIndex])) {
             throw new \InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
         }
 
