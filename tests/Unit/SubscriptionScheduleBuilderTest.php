@@ -72,7 +72,7 @@ class SubscriptionScheduleBuilderTest extends TestCase
             [
                 'items' => [['price' => 'price_test', 'quantity' => 1]],
                 'iterations' => 2,
-            ]
+            ],
         ];
 
         $builder = new SubscriptionScheduleBuilder(new User);

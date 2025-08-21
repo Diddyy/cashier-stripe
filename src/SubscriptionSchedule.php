@@ -317,16 +317,16 @@ class SubscriptionSchedule extends Model
     public function previewPhaseTransitionInvoice($phaseIndex, array $options = [])
     {
         $schedule = $this->asStripeSubscriptionSchedule(['phases']);
-        
+
         if (! isset($schedule->phases[$phaseIndex])) {
             throw new \InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
         }
 
         $phase = $schedule->phases[$phaseIndex];
-        
+
         // Calculate the preview date for this phase
         $previewDate = isset($phase->start_date) ? $phase->start_date : null;
-        
+
         if (! $previewDate) {
             return null;
         }

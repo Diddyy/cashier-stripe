@@ -2,9 +2,7 @@
 
 namespace Laravel\Cashier\Tests\Unit;
 
-use Laravel\Cashier\CustomerBalanceTransaction;
 use PHPUnit\Framework\TestCase;
-use Stripe\CustomerBalanceTransaction as StripeCustomerBalanceTransaction;
 
 class BillingCreditsTest extends TestCase
 {

@@ -93,7 +93,7 @@ class QuoteTest extends FeatureTestCase
             $this->assertEquals(1, count($user->quotes));
         } catch (\Exception $e) {
             // Skip test if API version doesn't support flexible billing
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'API version') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode');
             }
@@ -220,7 +220,7 @@ class QuoteTest extends FeatureTestCase
             $this->assertEquals('true', $stripeQuote->metadata->updated);
         } catch (\Exception $e) {
             // Skip test if API version doesn't support flexible billing
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'API version') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode');
             }
@@ -283,9 +283,9 @@ class QuoteTest extends FeatureTestCase
         } catch (\Exception $e) {
             // Reset config first
             config(['cashier.default_billing_mode' => 'classic']);
-            
+
             // Skip test if API version doesn't support flexible billing
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'API version') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode');
             }

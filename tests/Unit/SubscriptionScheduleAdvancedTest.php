@@ -266,12 +266,12 @@ class SubscriptionScheduleAdvancedTest extends TestCase
                 'phases' => [
                     ['items' => ['price_1'], 'iterations' => 2], // Updated phase
                     ['items' => ['price_2'], 'iterations' => 1], // Unchanged phase
-                ]
+                ],
             ]))
             ->willReturn($schedule);
-        
+
         $result = $schedule->updatePhase(0, ['iterations' => 2]);
-        
+
         $this->assertSame($schedule, $result);
     }
 }
@@ -280,7 +280,7 @@ class TestStripeInvoice extends StripeInvoice
 {
     public $id;
     public $customer;
-    
+
     public function __construct()
     {
         // Skip parent constructor to avoid API calls

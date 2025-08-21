@@ -222,7 +222,7 @@ class CheckoutTest extends FeatureTestCase
 
         $this->assertInstanceOf(Checkout::class, $checkout);
         $this->assertEquals('subscription', $checkout->mode);
-        
+
         // Verify the checkout session was created successfully
         $this->assertNotNull($checkout->id);
         $this->assertNotNull($checkout->url);
@@ -250,7 +250,7 @@ class CheckoutTest extends FeatureTestCase
 
         $this->assertInstanceOf(Checkout::class, $checkout);
         $this->assertEquals('subscription', $checkout->mode);
-        
+
         // Verify the checkout session was created successfully
         $this->assertNotNull($checkout->id);
         $this->assertNotNull($checkout->url);
@@ -278,7 +278,7 @@ class CheckoutTest extends FeatureTestCase
 
         $this->assertInstanceOf(Checkout::class, $checkout);
         $this->assertEquals('subscription', $checkout->mode);
-        
+
         // Verify the checkout session was created successfully
         $this->assertNotNull($checkout->id);
         $this->assertNotNull($checkout->url);
@@ -309,7 +309,7 @@ class CheckoutTest extends FeatureTestCase
 
         $this->assertInstanceOf(Checkout::class, $checkout);
         $this->assertEquals('subscription', $checkout->mode);
-        
+
         // Verify the checkout session was created successfully
         $this->assertNotNull($checkout->id);
         $this->assertNotNull($checkout->url);

@@ -120,7 +120,7 @@ class SubscriptionScheduleBuilder
     public function addPhaseWithOptions(array $items, array $options = []): static
     {
         $this->validatePhaseLimit();
-        
+
         $phase = array_merge([
             'items' => $items,
         ], $options);
@@ -136,7 +136,7 @@ class SubscriptionScheduleBuilder
     public function addPhaseWithProration(array $items, ?string $prorationBehavior = null, array $options = []): static
     {
         $this->validatePhaseLimit();
-        
+
         $phase = array_merge([
             'items' => $items,
         ], $options);
@@ -156,7 +156,7 @@ class SubscriptionScheduleBuilder
     public function addPhaseWithMetadata(array $items, array $metadata, array $options = []): static
     {
         $this->validatePhaseLimit();
-        
+
         $phase = array_merge([
             'items' => $items,
             'metadata' => $metadata,
@@ -178,9 +178,9 @@ class SubscriptionScheduleBuilder
     public function addTrialPhase(array $items, $trialEnd, array $options = [])
     {
         $this->validatePhaseLimit();
-        
-        $trialEndTimestamp = $trialEnd instanceof DateTimeInterface 
-            ? $trialEnd->getTimestamp() 
+
+        $trialEndTimestamp = $trialEnd instanceof DateTimeInterface
+            ? $trialEnd->getTimestamp()
             : $trialEnd;
 
         $phase = array_merge([
@@ -204,7 +204,7 @@ class SubscriptionScheduleBuilder
         if (count($phases) > 10) {
             throw new InvalidArgumentException('Subscription schedules can have a maximum of 10 phases.');
         }
-        
+
         $this->phases = array_map([$this, 'processPhaseOptions'], $phases);
 
         return $this;
@@ -214,6 +214,7 @@ class SubscriptionScheduleBuilder
      * Validate that we haven't exceeded the phase limit.
      *
      * @return void
+     *
      * @throws \InvalidArgumentException
      */
     protected function validatePhaseLimit()
@@ -237,9 +238,9 @@ class SubscriptionScheduleBuilder
         // Validate proration behavior if set
         if (isset($phase['proration_behavior'])) {
             $validProrationBehaviors = ['create_prorations', 'none', 'always_invoice'];
-            if (!in_array($phase['proration_behavior'], $validProrationBehaviors)) {
+            if (! in_array($phase['proration_behavior'], $validProrationBehaviors)) {
                 throw new InvalidArgumentException(
-                    'Invalid proration behavior. Must be one of: ' . implode(', ', $validProrationBehaviors)
+                    'Invalid proration behavior. Must be one of: '.implode(', ', $validProrationBehaviors)
                 );
             }
         }
@@ -355,7 +356,7 @@ class SubscriptionScheduleBuilder
         $schedule = $this->owner->subscriptionSchedules()->create([
             'stripe_id' => $stripeSchedule->id,
             'stripe_status' => $stripeSchedule->status,
-            'subscription_id' => $stripeSchedule->subscription 
+            'subscription_id' => $stripeSchedule->subscription
                 ? (is_object($stripeSchedule->subscription) ? $stripeSchedule->subscription->id : $stripeSchedule->subscription)
                 : null,
             'current_phase_started_at' => $currentPhase && isset($currentPhase->start_date)
@@ -373,7 +374,7 @@ class SubscriptionScheduleBuilder
             'released_at' => $stripeSchedule->released_at
                 ? Carbon::createFromTimestamp($stripeSchedule->released_at)
                 : null,
-            'metadata' => isset($stripeSchedule->metadata) && $stripeSchedule->metadata 
+            'metadata' => isset($stripeSchedule->metadata) && $stripeSchedule->metadata
                 ? (is_object($stripeSchedule->metadata) ? $stripeSchedule->metadata->toArray() : $stripeSchedule->metadata)
                 : null,
         ]);
@@ -403,7 +404,7 @@ class SubscriptionScheduleBuilder
      */
     protected function getPhases(): array
     {
-        if (empty($this->phases) && !$this->fromSubscription) {
+        if (empty($this->phases) && ! $this->fromSubscription) {
             throw new InvalidArgumentException('At least one phase is required when creating subscription schedules.');
         }
 
@@ -437,6 +438,7 @@ class SubscriptionScheduleBuilder
         // Classic mode is Stripe's default, so we omit it for backwards compatibility
         if ($effectiveMode === 'flexible') {
             $this->validateFlexibleBillingSupport();
+
             return ['type' => 'flexible'];
         }
 
@@ -451,11 +453,11 @@ class SubscriptionScheduleBuilder
     protected function validateFlexibleBillingSupport(): void
     {
         $apiVersion = config('cashier.stripe.api_version') ?? \Stripe\Stripe::getApiVersion();
-        
+
         if ($apiVersion && version_compare($apiVersion, '2025-06-30', '<')) {
             throw new \InvalidArgumentException(
-                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. ' .
-                'Current version: ' . $apiVersion . '. Please update your API version.'
+                'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. '.
+                'Current version: '.$apiVersion.'. Please update your API version.'
             );
         }
     }

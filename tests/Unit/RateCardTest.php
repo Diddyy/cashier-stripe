@@ -171,7 +171,7 @@ class RateCardTest extends TestCase
         $result = $rateCard->calculatePricing(250);
 
         $expectedTotal = (100 * 1000) + (150 * 800); // First 100 at $10, next 150 at $8
-        
+
         $this->assertEquals([
             'rate_card_id' => null,
             'pricing_type' => 'tiered_graduated',
@@ -327,7 +327,7 @@ class RateCardTest extends TestCase
 
         // Test that deactivate method exists and can be called
         $this->assertTrue($rateCard->is_active);
-        
+
         // Since we can't actually test the deactivation without a database,
         // we just verify the method exists and would return the instance
         $this->assertTrue(method_exists($rateCard, 'deactivate'));

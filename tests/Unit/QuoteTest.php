@@ -2,7 +2,6 @@
 
 namespace Laravel\Cashier\Tests\Unit;
 
-use App\Models\User;
 use Laravel\Cashier\Quote;
 use PHPUnit\Framework\TestCase;
 

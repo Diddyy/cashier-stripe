@@ -80,7 +80,7 @@ class QuoteBuilderTest extends TestCase
         $property->setAccessible(true);
 
         $expected = [
-            ['price' => 'price_test', 'quantity' => 2]
+            ['price' => 'price_test', 'quantity' => 2],
         ];
         $this->assertEquals($expected, $property->getValue($builder));
     }

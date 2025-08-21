@@ -1006,7 +1006,7 @@ class SubscriptionsTest extends FeatureTestCase
                 ->create('pm_card_visa');
         } catch (\Exception $e) {
             // Skip test if API version doesn't support flexible billing
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'Invalid parameter') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode');
             }
@@ -1022,7 +1022,7 @@ class SubscriptionsTest extends FeatureTestCase
         // Verify subscription was created successfully with flexible mode
         $stripeSubscription = $subscription->asStripeSubscription();
         $this->assertEquals('active', $stripeSubscription->status);
-        
+
         // Note: billing_mode is only returned in certain API versions
         // The important thing is that the subscription was created successfully
     }
@@ -1041,9 +1041,9 @@ class SubscriptionsTest extends FeatureTestCase
         } catch (\Exception $e) {
             // Reset config first
             config(['cashier.default_billing_mode' => 'classic']);
-            
+
             // Skip test if API version doesn't support flexible billing
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'Invalid parameter') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode');
             }
@@ -1110,7 +1110,7 @@ class SubscriptionsTest extends FeatureTestCase
             $this->assertTrue($user->subscribedToPrice(static::$otherPriceId, 'main'));
         } catch (\Exception $e) {
             // Skip test if API version doesn't support flexible billing
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'API version') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode');
             }
@@ -1136,7 +1136,7 @@ class SubscriptionsTest extends FeatureTestCase
             $this->assertTrue($subscription->refresh()->active());
         } catch (\Exception $e) {
             // Skip test if API version doesn't support flexible billing or migration
-            if (strpos($e->getMessage(), 'billing_mode') !== false || 
+            if (strpos($e->getMessage(), 'billing_mode') !== false ||
                 strpos($e->getMessage(), 'API version') !== false ||
                 strpos($e->getMessage(), 'migrate') !== false) {
                 $this->markTestSkipped('Stripe API version does not support flexible billing mode or migration');

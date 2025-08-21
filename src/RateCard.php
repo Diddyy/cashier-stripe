@@ -547,4 +547,3 @@ class RateCard extends Model
                number_format($amount / 100, 2);
     }
 }
-

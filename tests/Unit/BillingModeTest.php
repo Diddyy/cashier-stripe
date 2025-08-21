@@ -45,7 +45,7 @@ class BillingModeTest extends TestCase
 
         // Use reflection to access protected method and property
         $reflection = new \ReflectionClass($builder);
-        
+
         // Test the effective billing mode without validation
         $method = $reflection->getMethod('getEffectiveBillingMode');
         $method->setAccessible(true);
@@ -93,7 +93,7 @@ class BillingModeTest extends TestCase
 
         // Use reflection to access protected method and property
         $reflection = new \ReflectionClass($builder);
-        
+
         // Test the effective billing mode without validation
         $method = $reflection->getMethod('getEffectiveBillingMode');
         $method->setAccessible(true);
