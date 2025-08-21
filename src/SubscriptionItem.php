@@ -5,6 +5,7 @@ namespace Laravel\Cashier;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Concerns\HandlesPaymentFailures;
@@ -45,7 +46,7 @@ class SubscriptionItem extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function subscription()
+    public function subscription(): BelongsTo
     {
         $model = Cashier::$subscriptionModel;
 
@@ -60,7 +61,7 @@ class SubscriptionItem extends Model
      *
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function incrementQuantity($count = 1)
+    public function incrementQuantity(int $count = 1)
     {
         $this->updateQuantity($this->quantity + $count);
 
@@ -76,7 +77,7 @@ class SubscriptionItem extends Model
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function incrementAndInvoice($count = 1)
+    public function incrementAndInvoice(int $count = 1)
     {
         $this->alwaysInvoice();
 
@@ -93,7 +94,7 @@ class SubscriptionItem extends Model
      *
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function decrementQuantity($count = 1)
+    public function decrementQuantity(int $count = 1)
     {
         $this->updateQuantity(max(1, $this->quantity - $count));
 
@@ -108,7 +109,7 @@ class SubscriptionItem extends Model
      *
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function updateQuantity($quantity)
+    public function updateQuantity(int $quantity)
     {
         $this->subscription->guardAgainstIncomplete();
 
@@ -148,7 +149,7 @@ class SubscriptionItem extends Model
      *
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function swap($price, array $options = [])
+    public function swap(string $price, array $options = [])
     {
         $this->subscription->guardAgainstIncomplete();
 
@@ -178,8 +179,8 @@ class SubscriptionItem extends Model
         $this->fill([
             'stripe_product' => $stripeSubscriptionItem->price->product,
             'stripe_price' => $stripeSubscriptionItem->price->id,
-            'quantity' => $stripeSubscriptionItem->quantity,
             'meter_id' => $meterId,
+            'quantity' => $stripeSubscriptionItem->quantity,
             'meter_event_name' => $meterEventName,
         ])->save();
 
@@ -211,7 +212,7 @@ class SubscriptionItem extends Model
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function swapAndInvoice($price, array $options = [])
+    public function swapAndInvoice(string $price, array $options = [])
     {
         $this->alwaysInvoice();
 
@@ -225,14 +226,14 @@ class SubscriptionItem extends Model
      * @param  \DateTimeInterface|int|null  $timestamp
      * @return \Stripe\V2\Billing\MeterEvent
      */
-    public function reportUsage($quantity = 1, $timestamp = null)
+    public function reportUsage(int $quantity = 1, DateTimeInterface|int|null $timestamp = null)
     {
         $eventName = $this->meter_event_name;
         $meterId = $this->meter_id;
 
         if (! $eventName) {
             if (! $meterId) {
-                // Get the price to determine the meter
+                // Get the price to determine the meter...
                 $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
 
                 if (! isset($stripePrice->recurring->meter)) {
@@ -242,7 +243,7 @@ class SubscriptionItem extends Model
                 $meterId = $stripePrice->recurring->meter;
             }
 
-            // Get the meter to get the event name
+            // Get the meter to get the event name...
             $meter = $this->subscription->owner->stripe()->billing->meters->retrieve($meterId);
 
             $eventName = $meter->event_name;
@@ -250,7 +251,7 @@ class SubscriptionItem extends Model
             $this->forceFill(['meter_id' => $meterId, 'meter_event_name' => $eventName])->save();
         }
 
-        // Convert timestamp to RFC 3339 format for v2 API
+        // Convert timestamp to RFC 3339 format for v2 API...
         if ($timestamp instanceof DateTimeInterface) {
             $rfc3339Timestamp = $timestamp->format('c');
         } elseif (is_int($timestamp)) {
@@ -276,12 +277,12 @@ class SubscriptionItem extends Model
      * @param  array  $options
      * @return \Illuminate\Support\Collection
      */
-    public function usageRecords($options = [])
+    public function usageRecords(array $options = []): Collection
     {
         $meterId = $this->meter_id;
 
         if (! $meterId) {
-            // Get the price to determine the meter
+            // Get the price to determine the meter...
             $stripePrice = $this->subscription->owner->stripe()->prices->retrieve($this->stripe_price);
 
             if (! isset($stripePrice->recurring->meter)) {
@@ -293,7 +294,7 @@ class SubscriptionItem extends Model
             $this->forceFill(['meter_id' => $meterId])->save();
         }
 
-        // Default time range - current billing period
+        // Default time range - current billing period...
         $defaultOptions = [
             'start_time' => $this->currentPeriodStart()?->getTimestamp() ?? 1,
             'end_time' => time(),
@@ -312,7 +313,7 @@ class SubscriptionItem extends Model
      * @param  string|null  $timezone
      * @return \Illuminate\Support\Carbon|null
      */
-    public function currentPeriodStart($timezone = null)
+    public function currentPeriodStart(?string $timezone = null)
     {
         $stripeItem = $this->asStripeSubscriptionItem();
 
@@ -329,9 +330,9 @@ class SubscriptionItem extends Model
      * Get the current period end date for this subscription item.
      *
      * @param  string|null  $timezone
-     * @return \Carbon\Carbon|null
+     * @return \Illuminate\Support\Carbon|null
      */
-    public function currentPeriodEnd($timezone = null)
+    public function currentPeriodEnd(?string $timezone = null)
     {
         $stripeItem = $this->asStripeSubscriptionItem();
 
@@ -349,7 +350,7 @@ class SubscriptionItem extends Model
      *
      * @return bool
      */
-    public function onTrial()
+    public function onTrial(): bool
     {
         return $this->subscription->onTrial();
     }
@@ -359,7 +360,7 @@ class SubscriptionItem extends Model
      *
      * @return bool
      */
-    public function onGracePeriod()
+    public function onGracePeriod(): bool
     {
         return $this->subscription->onGracePeriod();
     }

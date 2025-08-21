@@ -4,7 +4,6 @@ namespace Laravel\Cashier\Concerns;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Stripe\V2\Billing\MeterEvent;
 
 trait ManagesUsageBilling
 {
@@ -32,12 +31,8 @@ trait ManagesUsageBilling
      * @param  array  $requestOptions
      * @return \Stripe\V2\Billing\MeterEvent
      */
-    public function reportMeterEvent(
-        string $meter,
-        int $quantity = 1,
-        array $options = [],
-        array $requestOptions = []
-    ): MeterEvent {
+    public function reportMeterEvent(string $meter, int $quantity = 1, array $options = [], array $requestOptions = [])
+    {
         $this->assertCustomerExists();
 
         /** @var \Stripe\Service\V2\Billing\MeterEventService $meterEventsService */

@@ -32,10 +32,10 @@ class CheckoutBuilder
      * @param  object|null  $parentInstance
      * @return void
      */
-    public function __construct($owner = null, $parentInstance = null)
+    public function __construct(protected $owner = null, ?object $parentInstance = null)
     {
         $this->owner = $owner;
-
+      
         if ($parentInstance && in_array(AllowsCoupons::class, class_uses_recursive($parentInstance))) {
             $this->couponId = $parentInstance->couponId;
             $this->promotionCodeId = $parentInstance->promotionCodeId;
@@ -73,7 +73,7 @@ class CheckoutBuilder
      * @param  object|null  $instance
      * @return \Laravel\Cashier\CheckoutBuilder
      */
-    public static function make($owner = null, $instance = null)
+    public static function make($owner = null, ?object $instance = null)
     {
         return new static($owner, $instance);
     }
@@ -172,7 +172,7 @@ class CheckoutBuilder
      * @param  array  $customerOptions
      * @return \Laravel\Cashier\Checkout
      */
-    public function create($items, array $sessionOptions = [], array $customerOptions = [])
+    public function create(string|array $items, array $sessionOptions = [], array $customerOptions = []): Checkout
     {
         $payload = array_filter([
             'allow_promotion_codes' => $this->allowPromotionCodes,

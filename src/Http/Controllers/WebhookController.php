@@ -82,9 +82,10 @@ class WebhookController extends Controller
                 $firstItem = $data['items']['data'][0];
                 $isSinglePrice = count($data['items']['data']) === 1;
 
-                $subscription = $user->subscriptions()->create([
-                    'type' => $data['metadata']['type'] ?? $data['metadata']['name'] ?? $this->newSubscriptionType($payload),
+                $subscription = $user->subscriptions()->updateOrCreate([
                     'stripe_id' => $data['id'],
+                ], [
+                    'type' => $data['metadata']['type'] ?? $data['metadata']['name'] ?? $this->newSubscriptionType($payload),
                     'stripe_status' => $data['status'],
                     'stripe_price' => $isSinglePrice ? $firstItem['price']['id'] : null,
                     'quantity' => $isSinglePrice && isset($firstItem['quantity']) ? $firstItem['quantity'] : null,
@@ -93,8 +94,9 @@ class WebhookController extends Controller
                 ]);
 
                 foreach ($data['items']['data'] as $item) {
-                    $subscription->items()->create([
+                    $subscription->items()->updateOrCreate([
                         'stripe_id' => $item['id'],
+                    ], [
                         'stripe_product' => $item['price']['product'],
                         'stripe_price' => $item['price']['id'],
                         'quantity' => $item['quantity'] ?? null,
@@ -309,6 +311,7 @@ class WebhookController extends Controller
                     );
 
                     $payment = new Payment($paymentIntent);
+
                     $user->notify(new $notification($payment));
                 }
             }
