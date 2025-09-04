@@ -170,7 +170,7 @@ class WebhookController extends Controller
             if ($data['cancel_at_period_end'] ?? false) {
                 $subscription->ends_at = $subscription->onTrial()
                     ? $subscription->trial_ends_at
-                    : Carbon::createFromTimestamp($data['current_period_end']);
+                    : Carbon::createFromTimestamp($data['current_period_end'] ?? $data['items']['data'][0]['current_period_end']);
             } elseif (isset($data['cancel_at']) || isset($data['canceled_at'])) {
                 $subscription->ends_at = Carbon::createFromTimestamp($data['cancel_at'] ?? $data['canceled_at']);
             } else {
