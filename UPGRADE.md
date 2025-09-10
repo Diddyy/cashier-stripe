@@ -18,6 +18,52 @@ Older Stripe accounts (e.g., those created before Basil previews) may encounter 
 
 If you use the Stripe PHP SDK directly, make sure to properly test your integration after updating.
 
+### Metered Billing Changes
+
+With the introduction of Stripe's Basil API, the return type for the `reportUsage()` and `reportUsageFor()` methods within `Laravel\Cashier\Subscription` has changed from `Stripe\UsageRecord` to `Stripe\V2\Billing\MeterEvent`.
+
+This affects how usage data is queried or processed — e.g., event metadata or IDs might differ. Update type hints or handling logic in custom reporting. The new `meter_id` caching in `SubscriptionItem` improves performance but requires the database migration (see below).
+
+### Database Migration Changes
+
+PR: https://github.com/laravel/cashier-stripe/pull/1762
+
+To better track usage-based billings, we've added `meter_event_name` and `meter_id` to the `subscription_items` table. The `meter_id` column is `nullable` and is cast as a string in the model.
+
+If you have custom queries or indexes on `subscription_items`, consider adding them for these fields. Additionally, internal ID generation has changed from `uniqid()` to `Str::uuid()`, which is unlikely to affect user code but could impact extensions relying on prefix-based uniqueness.
+
+To update your database schema, you should run the following commands:
+
+```shell
+php artisan vendor:publish --tag="cashier-migrations"
+
+php artisan migrate
+```
+
+### Pricing and Tax Changes on Invoice Item Line
+
+The Stripe Basil API [replaces top-level price fields with improved price modeling](https://docs.stripe.com/changelog/basil/2025-03-31/invoice-pricing-configurations) on Invoice Items and Invoice Line Items. Top-level fields like `amount` or `price` on line items are deprecated in favor of nested structures, which could break custom invoice rendering or calculations if not updated.
+
+To support the new structure, the following methods has been added to `Laravel\Cashier\InvoiceLineItem`:
+
+* `invoiceItemId()`
+* `isInvoiceItem()`
+* `isProration()`
+* `parent()`
+* `price()`
+* `priceId()`
+* `prorationDetails()`
+* `subscriptionId()`
+* `subscriptionItemId()`
+* `taxBehavior()`
+* `taxes()`
+* `taxRateDetails()`
+* `totalTaxAmount()`
+* `unitAmount()`
+* `unitAmountFormatted()`
+
+The new `taxBehavior` method supports Basil's enhanced tax modeling (e.g., inclusive /exclusive / reverse charge), so verify tax calculations post-upgrade if you have international customers.
+
 ### Coupon Ending Dates
 
 Stripe's Basil API no longer supports setting discount coupons without an end date, and any application using a coupon without an end date will trigger `Laravel\Cashier\Exceptions\InvalidCoupon` exception after updating to Cashier 16.
@@ -36,7 +82,7 @@ $subscription->applyCoupon('coupon_id');
 $subscription->applyPromotionCode('promotion_code_id');
 ```
 
-However, Cashier 16 will apply coupon and promotion code on the primary subscription. This change prevents accidental application to unintended subscriptions in multi-subscription setups. If your logic assumes global application, migrate to the new methods explicitly.
+However, Cashier 16 will apply coupon and promotion codes on the primary subscription. This change prevents accidental application to unintended subscriptions in multi-subscription setups. If your logic assumes global application, migrate to the new methods explicitly.
 
 You can apply coupons to all subscription using the following methods:
 
@@ -52,59 +98,13 @@ $billable->applyCoupon('coupon_id', 'default');
 $billable->applyPromotionCode('promotion_code_id', 'default');
 ```
 
-### Pricing and Tax changes on Invoice Item Line
+### Coupon Validation in Checkouts
 
-The Stripe Basil API [replaces top-level price fields with improved price modeling](https://docs.stripe.com/changelog/basil/2025-03-31/invoice-pricing-configurations) on Invoice Items and Invoice Line Items. Top-level fields like `amount` or `price` on line items are deprecated in favor of nested structures, which could break custom invoice rendering or calculations if not updated.
-
-To support the new structure the following methods has been added to `Laravel\Cashier\InvoiceLineItem`:
-
-* `invoiceItemId()`
-* `isInvoiceItem()`
-* `isProration()`
-* `parent()`
-* `price()`
-* `priceId()`
-* `prorationDetails()`
-* `subscriptionId()`
-* `subscriptionItemId()`
-* `taxBehavior()`
-* `taxes()`
-* `taxRateDetails()`
-* `totalTaxAmount()`
-* `unitAmount()`
-* `unitAmountFormatted()`
-
-The new `taxBehavior` method supports Basil's enhanced tax modeling (e.g., inclusive/exclusive / reverse charge), so verify tax calculations post-upgrade if you have international customers.
-
-### Metered Billing Changes
-
-With the introduction of Stripe's Basil API, the return type for the `reportUsage()` and `reportUsageFor()` methods within `Laravel\Cashier\Subscription` has changed from `Stripe\UsageRecord` to `Stripe\V2\Billing\MeterEvent`.
-
-This affects how usage data is queried or processed — e.g., event metadata or IDs might differ. Update type hints or handling logic in custom reporting. The new `meter_id` caching in `SubscriptionItem` improves performance but requires the database migration to store it properly.
-
-### Database Migration Changes
-
-PR: https://github.com/laravel/cashier-stripe/pull/1762
-
-To better track usage-based billings, we've added `meter_event_name` and `meter_id` to the `subscription_items` table. The `meter_id` column is nullable and cast as a string in the model.
-
-If you have custom queries or indexes on `subscription_items`, consider adding them for these fields. Additionally, internal ID generation has changed from `uniqid()` to `Str::uuid()`, which is unlikely to affect user code but could impact extensions relying on prefix-based uniqueness.
-
-To update your database schema, you should run the following commands:
-
-```shell
-php artisan vendor:publish --tag="cashier-migrations"
-
-php artisan migrate
-```
+New traits like `AllowsCoupons` introduce stricter validation for coupons in checkout sessions (e.g., ensuring compatibility with Basil). If you customize checkouts, test for rejection of invalid promotions.
 
 ### Payment Failure Handling
 
 The `HandlesPaymentFailures` trait no longer automatically expands `invoice.subscription` in payment intent failures. If your error-handling code assumes this data is pre-loaded, you should fetch it manually (e.g., via `$invoice->subscription()`).
-
-### Coupon Validation in Checkouts
-
-New traits like `AllowsCoupons` introduce stricter validation for coupons in checkout sessions (e.g., ensuring compatibility with Basil). If you customize checkouts, test for rejection of invalid promotions.
 
 ## Upgrading To 15.0 From 14.x
 
