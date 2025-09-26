@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v15.6.4...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.1...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,20 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.0.1](https://github.com/laravel/cashier/compare/v16.0.0...v16.0.1) - 2025-09-25
+
+* [16.x] Return PaymentMethod when updating default payment method, if payment method already exist. by [@gurindersingh](https://github.com/gurindersingh) in https://github.com/laravel/cashier-stripe/pull/1777
+
+## [v16.0.0](https://github.com/laravel/cashier/compare/v15.6.4...v16.0.0) - 2025-09-10
+
+* [16.x] Add requestOption when creating customers by [@mbarreiro85](https://github.com/mbarreiro85) in https://github.com/laravel/cashier-stripe/pull/1692
+* Set variable's default value to be an array aligning it with other Cashier variable defaults by [@u01jmg3](https://github.com/u01jmg3) in https://github.com/laravel/cashier-stripe/pull/1697
+* Prevent address lock in Checkout (#1764) by [@captainscorch](https://github.com/captainscorch) in https://github.com/laravel/cashier-stripe/pull/1766
+* [16.x] Stripe Basil API Support by [@Diddyy](https://github.com/Diddyy) in https://github.com/laravel/cashier-stripe/pull/1762
+* [16.x] Test Improvements by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1767
+* [16.x] Uses PHP Native Type Declarations 🐘 by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1769
+* [16.x] Upgrade Guides by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1768
 
 ## [v15.6.4](https://github.com/laravel/cashier/compare/v15.6.3...v15.6.4) - 2025-04-22
 
