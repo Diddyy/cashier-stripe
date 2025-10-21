@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.2...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.3...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,11 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.0.3](https://github.com/laravel/cashier/compare/v16.0.2...v16.0.3) - 2025-10-21
+
+* Update `WebhookController::handleCustomerSubscriptionUpdated()` return type and add tests to verify usage by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1786
+* [16.x] Taxes on invoice need to be null by [@matthieumota](https://github.com/matthieumota) in https://github.com/laravel/cashier-stripe/pull/1788
 
 ## [v16.0.2](https://github.com/laravel/cashier/compare/v16.0.1...v16.0.2) - 2025-10-09
 
