@@ -4,6 +4,7 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Collection;
@@ -43,7 +44,7 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
      */
     public function unitAmountExcludingTax(): string
     {
-        return $this->formatAmount($this->item->unit_amount_excluding_tax ?? 0);
+        return $this->formatAmount($this->taxes()->sum('taxable_amount') ?? 0);
     }
 
     /**
@@ -233,6 +234,15 @@ class InvoiceLineItem implements Arrayable, Jsonable, JsonSerializable
         // If tax_rate is already expanded as an object, return it...
         if (isset($taxRateDetails->tax_rate->id) && is_object($taxRateDetails->tax_rate)) {
             return $taxRateDetails->tax_rate;
+        }
+
+        // If tax_rate is just an ID string, fetch it from Stripe...
+        if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate)) {
+            try {
+                return $this->invoice->owner()->stripe()->taxRates->retrieve($taxRateDetails->tax_rate);
+            } catch (Exception $e) {
+                return null;
+            }
         }
 
         return null;
