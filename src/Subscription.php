@@ -229,6 +229,7 @@ class Subscription extends Model
     public function active(): bool
     {
         return ! $this->ended() &&
+            $this->stripe_status !== StripeSubscription::STATUS_CANCELED &&
             (! Cashier::$deactivateIncomplete || $this->stripe_status !== StripeSubscription::STATUS_INCOMPLETE) &&
             $this->stripe_status !== StripeSubscription::STATUS_INCOMPLETE_EXPIRED &&
             (! Cashier::$deactivatePastDue || $this->stripe_status !== StripeSubscription::STATUS_PAST_DUE) &&
@@ -248,7 +249,8 @@ class Subscription extends Model
                 ->orWhere(function ($query) {
                     $query->onGracePeriod();
                 });
-        })->where('stripe_status', '!=', StripeSubscription::STATUS_INCOMPLETE_EXPIRED)
+        })->where('stripe_status', '!=', StripeSubscription::STATUS_CANCELED)
+            ->where('stripe_status', '!=', StripeSubscription::STATUS_INCOMPLETE_EXPIRED)
             ->where('stripe_status', '!=', StripeSubscription::STATUS_UNPAID);
 
         if (Cashier::$deactivatePastDue) {
@@ -302,7 +304,7 @@ class Subscription extends Model
      */
     public function canceled(): bool
     {
-        return ! is_null($this->ends_at);
+        return $this->stripe_status === StripeSubscription::STATUS_CANCELED || ! is_null($this->ends_at);
     }
 
     /**
@@ -313,7 +315,10 @@ class Subscription extends Model
      */
     public function scopeCanceled(Builder $query): void
     {
-        $query->whereNotNull('ends_at');
+        $query->where(function ($query) {
+            $query->where('stripe_status', StripeSubscription::STATUS_CANCELED)
+                  ->orWhereNotNull('ends_at');
+        });
     }
 
     /**
@@ -324,7 +329,10 @@ class Subscription extends Model
      */
     public function scopeNotCanceled(Builder $query): void
     {
-        $query->whereNull('ends_at');
+        $query->where(function ($query) {
+            $query->whereNull('ends_at')
+                  ->where('stripe_status', '!=', StripeSubscription::STATUS_CANCELED);
+        });
     }
 
     /**
@@ -355,7 +363,19 @@ class Subscription extends Model
      */
     public function onTrial(): bool
     {
-        return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+        if (! $this->trial_ends_at || ! $this->trial_ends_at->isFuture()) {
+            return false;
+        }
+
+        if ($this->stripe_status === StripeSubscription::STATUS_CANCELED) {
+            return false;
+        }
+
+        if ($this->ends_at && $this->ends_at->isPast()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -366,7 +386,13 @@ class Subscription extends Model
      */
     public function scopeOnTrial(Builder $query): void
     {
-        $query->whereNotNull('trial_ends_at')->where('trial_ends_at', '>', Carbon::now());
+        $query->whereNotNull('trial_ends_at')
+              ->where('trial_ends_at', '>', Carbon::now())
+              ->where('stripe_status', '!=', StripeSubscription::STATUS_CANCELED)
+              ->where(function ($query) {
+                  $query->whereNull('ends_at')
+                        ->orWhere('ends_at', '>', Carbon::now());
+              });
     }
 
     /**
@@ -408,7 +434,11 @@ class Subscription extends Model
      */
     public function onGracePeriod(): bool
     {
-        return $this->ends_at && $this->ends_at->isFuture();
+        if (! $this->ends_at || ! $this->ends_at->isFuture()) {
+            return false;
+        }
+
+        return $this->stripe_status !== StripeSubscription::STATUS_CANCELED;
     }
 
     /**
@@ -419,7 +449,9 @@ class Subscription extends Model
      */
     public function scopeOnGracePeriod(Builder $query): void
     {
-        $query->whereNotNull('ends_at')->where('ends_at', '>', Carbon::now());
+        $query->whereNotNull('ends_at')
+              ->where('ends_at', '>', Carbon::now())
+              ->where('stripe_status', '!=', StripeSubscription::STATUS_CANCELED);
     }
 
     /**
