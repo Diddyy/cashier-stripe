@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.3...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.4...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,12 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.0.4](https://github.com/laravel/cashier/compare/v16.0.3...v16.0.4) - 2025-11-04
+
+* Add workbench to export-ignore in .gitattributes by [@stevebauman](https://github.com/stevebauman) in https://github.com/laravel/cashier-stripe/pull/1792
+* [16.x] Fix taxes with stripe sdk 17 by [@matthieumota](https://github.com/matthieumota) in https://github.com/laravel/cashier-stripe/pull/1793
+* Fix invoice() exception handling by [@josiasmontag](https://github.com/josiasmontag) in https://github.com/laravel/cashier-stripe/pull/1795
 
 ## [v16.0.3](https://github.com/laravel/cashier/compare/v16.0.2...v16.0.3) - 2025-10-21
 
