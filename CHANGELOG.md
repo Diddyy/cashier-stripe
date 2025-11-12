@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.4...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.5...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,10 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.0.5](https://github.com/laravel/cashier/compare/v16.0.4...v16.0.5) - 2025-11-12
+
+* Fix method call to use property access for subscriptions by [@larskoole](https://github.com/larskoole) in https://github.com/laravel/cashier-stripe/pull/1802
 
 ## [v16.0.4](https://github.com/laravel/cashier/compare/v16.0.3...v16.0.4) - 2025-11-04
 
