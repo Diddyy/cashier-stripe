@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.5...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.6...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,11 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.0.6](https://github.com/laravel/cashier/compare/v16.0.5...v16.0.6) - 2025-11-25
+
+* [16.x] Update `SubscriptionItem` quantity of a Single Price subscription. by [@Junveloper](https://github.com/Junveloper) in https://github.com/laravel/cashier-stripe/pull/1803
+* [16.x] PHP 8.5 Compatibility by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1804
 
 ## [v16.0.5](https://github.com/laravel/cashier/compare/v16.0.4...v16.0.5) - 2025-11-12
 
