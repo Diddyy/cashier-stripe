@@ -200,10 +200,6 @@ class QuoteTest extends TestCase
             public $quotes;
         };
 
-         $this->getMockBuilder(\stdClass::class)
-            ->addMethods(['quotes'])
-            ->getMock();
-
         $quote1 = $this->getMockBuilder(Quote::class)
             ->onlyMethods(['number'])
             ->getMock();
