@@ -31,7 +31,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getBillingModeForPayload');
-        $method->setAccessible(true);
 
         $this->assertNull($method->invoke($builder));
     }
@@ -44,7 +43,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getEffectiveBillingMode');
-        $method->setAccessible(true);
 
         $this->assertEquals('flexible', $method->invoke($builder));
     }
