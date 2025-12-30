@@ -333,4 +333,3 @@ class RateCardTest extends TestCase
         $this->assertTrue(method_exists($rateCard, 'deactivate'));
     }
 }
-

@@ -11,12 +11,12 @@ class UsageThresholdsTest extends TestCase
         $billable = $this->getMockBillableWithUsageBilling();
 
         $result = $billable->setUsageThreshold('meter_123', 1000, 'monthly', ['email' => true]);
-    
+
         $this->assertSame($billable, $result);
-    
+
         // Check that the threshold was stored in cache
         $threshold = cache()->get('cashier:usage_threshold:user_123:meter_123');
-    
+
         $this->assertNotNull($threshold);
         $this->assertEquals('user_123', $threshold['customer_id']);
         $this->assertEquals('meter_123', $threshold['meter_id']);
@@ -37,11 +37,11 @@ class UsageThresholdsTest extends TestCase
             'period' => 'billing_cycle',
             'alert_options' => [],
         ];
-    
+
         cache()->put('cashier:usage_threshold:user_123:meter_123', $expectedThreshold);
-    
+
         $threshold = $billable->getUsageThreshold('meter_123');
-    
+
         $this->assertEquals($expectedThreshold, $threshold);
     }
 
@@ -50,7 +50,7 @@ class UsageThresholdsTest extends TestCase
         $billable = $this->getMockBillableWithUsageBilling();
 
         $threshold = $billable->getUsageThreshold('nonexistent_meter');
-    
+
         $this->assertNull($threshold);
     }
 
@@ -60,9 +60,9 @@ class UsageThresholdsTest extends TestCase
 
         // Set a threshold first
         cache()->put('cashier:usage_threshold:user_123:meter_123', ['test' => 'data']);
-    
+
         $result = $billable->removeUsageThreshold('meter_123');
-    
+
         $this->assertSame($billable, $result);
         $this->assertNull(cache()->get('cashier:usage_threshold:user_123:meter_123'));
     }
@@ -72,7 +72,7 @@ class UsageThresholdsTest extends TestCase
         $billable = $this->getMockBillableWithUsageBilling();
 
         $result = $billable->checkUsageThreshold('meter_123');
-    
+
         $this->assertNull($result);
     }
 
@@ -91,7 +91,7 @@ class UsageThresholdsTest extends TestCase
         $billable->setMockUsageSummaries($mockUsageSummaries);
 
         $result = $billable->checkUsageThreshold('meter_123');
-    
+
         $this->assertNull($result);
     }
 
@@ -110,7 +110,7 @@ class UsageThresholdsTest extends TestCase
         $billable->setMockUsageSummaries($mockUsageSummaries);
 
         $result = $billable->checkUsageThreshold('meter_123');
-    
+
         $this->assertNotNull($result);
         $this->assertEquals(500, $result['threshold_config']['threshold']);
         $this->assertEquals('monthly', $result['threshold_config']['period']);
@@ -133,7 +133,7 @@ class UsageThresholdsTest extends TestCase
         $billable->setMockUsageSummaries($mockUsageSummaries);
 
         $percentage = $billable->getUsagePercentage('meter_123');
-    
+
         $this->assertEquals(25.0, $percentage);
     }
 
@@ -142,7 +142,7 @@ class UsageThresholdsTest extends TestCase
         $billable = $this->getMockBillableWithUsageBilling();
 
         $percentage = $billable->getUsagePercentage('meter_123');
-    
+
         $this->assertNull($percentage);
     }
 
@@ -158,7 +158,7 @@ class UsageThresholdsTest extends TestCase
         $billable->setMockUsageSummaries($mockUsageSummaries);
 
         $analytics = $billable->getUsageAnalytics('meter_123', ['daily']);
-    
+
         $this->assertArrayHasKey('daily', $analytics);
         $this->assertEquals(300, $analytics['daily']['total_usage']);
         $this->assertEquals(2, $analytics['daily']['events_count']);
@@ -209,4 +209,3 @@ class MockBillableForUsageBilling
         $this->mockUsageSummaries = $summaries;
     }
 }
-

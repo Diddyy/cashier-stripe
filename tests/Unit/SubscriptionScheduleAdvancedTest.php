@@ -16,46 +16,46 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['active', 'notStarted'])
             ->getMock();
-        
+
         $schedule->method('active')->willReturn(true);
         $schedule->method('notStarted')->willReturn(false);
-        
+
         // Mock the owner with Stripe client
         $mockOwner = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['stripe'])
             ->getMock();
-        
+
         $mockStripeClient = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['invoices'])
             ->getMock();
-        
+
         $mockInvoicesService = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['upcoming'])
             ->getMock();
-        
+
         $mockStripeInvoice = new TestStripeInvoice();
         $mockStripeInvoice->id = 'in_test123';
         $mockStripeInvoice->customer = 'cus_test123';
-        
+
         $mockInvoicesService->method('upcoming')->willReturn($mockStripeInvoice);
         $mockStripeClient->invoices = $mockInvoicesService;
         $mockOwner->method('stripe')->willReturn($mockStripeClient);
-        
+
         // Set the owner
         $schedule->owner = $mockOwner;
         $schedule->stripe_id = 'sub_sched_test123';
         $mockOwner->stripe_id = 'cus_test123';
-        
+
         // Use reflection to call the method
         $reflection = new \ReflectionClass($schedule);
         $method = $reflection->getMethod('upcomingInvoicePreview');
         $method->setAccessible(true);
-        
+
         // Mock the Invoice constructor
         $invoice = $this->getMockBuilder(Invoice::class)
             ->disableOriginalConstructor()
             ->getMock();
-        
+
         // We can't easily test the actual Invoice creation due to constructor complexity
         // Instead, verify the method calls the Stripe API with correct parameters
         $mockInvoicesService->expects($this->once())
@@ -64,7 +64,7 @@ class SubscriptionScheduleAdvancedTest extends TestCase
                 'customer' => 'cus_test123',
                 'subscription_schedule' => 'sub_sched_test123',
             ]));
-        
+
         $method->invoke($schedule);
     }
 
@@ -73,13 +73,13 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['active', 'notStarted'])
             ->getMock();
-        
+
         $schedule->method('active')->willReturn(false);
         $schedule->method('notStarted')->willReturn(false);
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Cannot preview invoices for inactive subscription schedules.');
-        
+
         $schedule->upcomingInvoicePreview();
     }
 
@@ -88,10 +88,10 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['upcomingInvoicePreview'])
             ->getMock();
-        
+
         $schedule->method('upcomingInvoicePreview')
             ->willThrowException(new InvalidRequestException('No upcoming invoice'));
-        
+
         $result = $schedule->previewNextInvoice();
         $this->assertNull($result);
     }
@@ -101,13 +101,13 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['upcomingInvoicePreview'])
             ->getMock();
-        
+
         $schedule->method('upcomingInvoicePreview')
             ->willThrowException(new InvalidRequestException('Different error'));
-        
+
         $this->expectException(InvalidRequestException::class);
         $this->expectExceptionMessage('Different error');
-        
+
         $schedule->previewNextInvoice();
     }
 
@@ -115,43 +115,43 @@ class SubscriptionScheduleAdvancedTest extends TestCase
     {
         $mockStripeSchedule = new \stdClass();
         $mockStripeSchedule->phases = [];
-        
+
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['asStripeSubscriptionSchedule'])
             ->getMock();
-        
+
         $schedule->method('asStripeSubscriptionSchedule')
             ->willReturn($mockStripeSchedule);
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Phase index 0 does not exist on this schedule.');
-        
+
         $schedule->previewPhaseTransitionInvoice(0);
     }
 
     public function test_subscription_schedule_format_phase_items_for_preview()
     {
         $schedule = new SubscriptionSchedule();
-        
+
         $items = [
             ['price' => 'price_1', 'quantity' => 2],
             ['price' => 'price_2'], // No quantity
             ['price' => 'price_3', 'quantity' => 5, 'extra' => 'ignored'],
         ];
-        
+
         // Use reflection to call the protected method
         $reflection = new \ReflectionClass($schedule);
         $method = $reflection->getMethod('formatPhaseItemsForPreview');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke($schedule, $items);
-        
+
         $expected = [
             ['price' => 'price_1', 'quantity' => 2],
             ['price' => 'price_2', 'quantity' => 1],
             ['price' => 'price_3', 'quantity' => 5],
         ];
-        
+
         $this->assertEquals($expected, $result);
     }
 
@@ -163,16 +163,16 @@ class SubscriptionScheduleAdvancedTest extends TestCase
             (object) ['items' => ['price_1'], 'start_date' => 1640995200],
             (object) ['items' => ['price_2'], 'start_date' => 1641081600],
         ];
-        
+
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['asStripeSubscriptionSchedule'])
             ->getMock();
-        
+
         $schedule->method('asStripeSubscriptionSchedule')
             ->willReturn($mockStripeSchedule);
-        
+
         $phases = $schedule->phases();
-        
+
         $this->assertCount(2, $phases);
         $this->assertEquals(['price_1'], $phases[0]->items);
         $this->assertEquals(['price_2'], $phases[1]->items);
@@ -186,16 +186,16 @@ class SubscriptionScheduleAdvancedTest extends TestCase
             'start_date' => 1640995200,
             'end_date' => 1641081600,
         ];
-        
+
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['asStripeSubscriptionSchedule'])
             ->getMock();
-        
+
         $schedule->method('asStripeSubscriptionSchedule')
             ->willReturn($mockStripeSchedule);
-        
+
         $currentPhase = $schedule->currentPhase();
-        
+
         $this->assertEquals(['price_current'], $currentPhase->items);
         $this->assertEquals(1640995200, $currentPhase->start_date);
         $this->assertEquals(1641081600, $currentPhase->end_date);
@@ -205,21 +205,21 @@ class SubscriptionScheduleAdvancedTest extends TestCase
     {
         $currentTime = time();
         $futureTime = $currentTime + 3600;
-        
+
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['phases'])
             ->getMock();
-        
+
         $phases = [
             (object) ['start_date' => $currentTime - 3600], // Past phase
             (object) ['start_date' => $futureTime], // Future phase
             (object) ['start_date' => $futureTime + 3600], // Another future phase
         ];
-        
+
         $schedule->method('phases')->willReturn($phases);
-        
+
         $remainingPhases = $schedule->remainingPhases();
-        
+
         $this->assertCount(2, $remainingPhases);
         $this->assertEquals($futureTime, $remainingPhases[1]->start_date);
         $this->assertEquals($futureTime + 3600, $remainingPhases[2]->start_date);
@@ -230,17 +230,17 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $mockStripeSchedule = new \stdClass();
         $mockStripeSchedule->phases = new \stdClass();
         $mockStripeSchedule->phases->data = [];
-        
+
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['asStripeSubscriptionSchedule'])
             ->getMock();
-        
+
         $schedule->method('asStripeSubscriptionSchedule')
             ->willReturn($mockStripeSchedule);
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Phase index 0 does not exist on this schedule.');
-        
+
         $schedule->updatePhase(0, ['iterations' => 2]);
     }
 
@@ -252,14 +252,14 @@ class SubscriptionScheduleAdvancedTest extends TestCase
             (object) ['items' => ['price_1'], 'iterations' => 1],
             (object) ['items' => ['price_2'], 'iterations' => 1],
         ];
-        
+
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
             ->onlyMethods(['asStripeSubscriptionSchedule', 'updateSchedule'])
             ->getMock();
-        
+
         $schedule->method('asStripeSubscriptionSchedule')
             ->willReturn($mockStripeSchedule);
-        
+
         $schedule->expects($this->once())
             ->method('updateSchedule')
             ->with($this->equalTo([
@@ -286,4 +286,3 @@ class TestStripeInvoice extends StripeInvoice
         // Skip parent constructor to avoid API calls
     }
 }
-

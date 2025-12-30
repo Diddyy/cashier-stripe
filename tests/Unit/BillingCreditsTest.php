@@ -116,4 +116,3 @@ class TestStripeCustomer
 {
     public $balance = [];
 }
-
