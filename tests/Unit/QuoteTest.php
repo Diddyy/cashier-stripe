@@ -196,7 +196,11 @@ class QuoteTest extends TestCase
 
     public function test_quote_find_by_number()
     {
-        $mockOwner = $this->getMockBuilder(\stdClass::class)
+        $mockOwner = new class() {
+            public $quotes;
+        };
+
+         $this->getMockBuilder(\stdClass::class)
             ->addMethods(['quotes'])
             ->getMock();
 
