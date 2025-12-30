@@ -49,7 +49,6 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         // Use reflection to call the method
         $reflection = new \ReflectionClass($schedule);
         $method = $reflection->getMethod('upcomingInvoicePreview');
-        $method->setAccessible(true);
 
         // Mock the Invoice constructor
         $invoice = $this->getMockBuilder(Invoice::class)
@@ -142,7 +141,6 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         // Use reflection to call the protected method
         $reflection = new \ReflectionClass($schedule);
         $method = $reflection->getMethod('formatPhaseItemsForPreview');
-        $method->setAccessible(true);
 
         $result = $method->invoke($schedule, $items);
 

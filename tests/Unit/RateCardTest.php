@@ -301,7 +301,6 @@ class RateCardTest extends TestCase
 
         $reflection = new \ReflectionClass($rateCard);
         $method = $reflection->getMethod('formatPrice');
-        $method->setAccessible(true);
 
         $this->assertEquals('$10.00', $method->invoke($rateCard, 1000));
         $this->assertEquals('$0.50', $method->invoke($rateCard, 50));
@@ -313,7 +312,6 @@ class RateCardTest extends TestCase
 
         $reflection = new \ReflectionClass($rateCard);
         $method = $reflection->getMethod('formatPrice');
-        $method->setAccessible(true);
 
         $this->assertEquals('EUR 10.00', $method->invoke($rateCard, 1000));
     }

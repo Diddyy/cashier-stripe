@@ -19,7 +19,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -61,7 +60,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -84,7 +82,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $this->assertEquals($phases, $property->getValue($builder));
     }
@@ -105,7 +102,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $this->assertEquals([$phase], $property->getValue($builder));
     }
@@ -121,7 +117,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('fromSubscription');
-        $property->setAccessible(true);
 
         $this->assertEquals('sub_test', $property->getValue($builder));
     }
@@ -137,7 +132,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('endBehavior');
-        $property->setAccessible(true);
 
         $this->assertEquals('cancel', $property->getValue($builder));
     }
@@ -155,7 +149,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('metadata');
-        $property->setAccessible(true);
 
         $this->assertEquals($metadata, $property->getValue($builder));
     }
@@ -214,7 +207,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
@@ -247,7 +239,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
@@ -269,7 +260,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
@@ -291,7 +281,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);
@@ -317,7 +306,6 @@ class SubscriptionScheduleBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('phases');
-        $property->setAccessible(true);
 
         $phases = $property->getValue($builder);
         $this->assertCount(1, $phases);

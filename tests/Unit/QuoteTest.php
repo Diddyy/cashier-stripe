@@ -18,7 +18,6 @@ class QuoteTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($quote);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($quote));
     }
@@ -31,7 +30,6 @@ class QuoteTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($quote);
         $method = $reflection->getMethod('getBillingModeForPayload');
-        $method->setAccessible(true);
 
         $this->assertNull($method->invoke($quote));
     }
@@ -44,7 +42,6 @@ class QuoteTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($quote);
         $method = $reflection->getMethod('getEffectiveBillingMode');
-        $method->setAccessible(true);
 
         $this->assertEquals('flexible', $method->invoke($quote));
     }
@@ -60,7 +57,6 @@ class QuoteTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($quote);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($quote));
     }
