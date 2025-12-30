@@ -2,22 +2,30 @@
 
 namespace Laravel\Cashier\Tests\Unit;
 
+use Hamcrest\Matchers;
 use Laravel\Cashier\Invoice;
 use Laravel\Cashier\SubscriptionSchedule;
 use Mockery as m;
+use Orchestra\Testbench\Concerns\InteractsWithMockery;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\Invoice as StripeInvoice;
 
 class SubscriptionScheduleAdvancedTest extends TestCase
 {
+    use InteractsWithMockery;
+
+    /** {@inheritdoc} */
+    #[\Override]
     protected function tearDown(): void
     {
-        m::close();
+        $this->tearDownTheTestEnvironmentUsingMockery();
 
         parent::tearDown();
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function test_subscription_schedule_upcoming_invoice_preview()
     {
         // Mock the subscription schedule
@@ -33,16 +41,14 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $mockStripeInvoice->customer = 'cus_test123';
 
         // Mock the owner with Stripe client
-        $mockInvoicesService = new class($mockStripeInvoice) {
-            public function __construct(protected $upcomingStripeInvoice) {}
-            public function upcoming() { return $this->upcomingStripeInvoice; }
-        };
+        $mockInvoicesService = m::mock(TestStripeInvoiceService::class, [$mockStripeInvoice]);
 
         $mockStripeClient = new class($mockInvoicesService) {
-            public function __construct(public $invoice) {}
+            public function __construct(public $invoices) {}
         };
 
         $mockOwner = new class($mockStripeClient) {
+            public $stripe_id;
             public function __construct(protected $stripeClient) {}
             public function stripe() { return $this->stripeClient; }
         };
@@ -51,6 +57,15 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $schedule->owner = $mockOwner;
         $schedule->stripe_id = 'sub_sched_test123';
         $mockOwner->stripe_id = 'cus_test123';
+
+        // We can't easily test the actual Invoice creation due to constructor complexity
+        // Instead, verify the method calls the Stripe API with correct parameters
+        $mockInvoicesService->shouldReceive('upcoming')
+            ->once()
+            ->with(Matchers::identicalTo([
+                'customer' => 'cus_test123',
+                'subscription_schedule' => 'sub_sched_test123',
+            ]))->andReturn($mockStripeInvoice);
 
         // Use reflection to call the method
         $reflection = new \ReflectionClass($schedule);
@@ -61,18 +76,10 @@ class SubscriptionScheduleAdvancedTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        // We can't easily test the actual Invoice creation due to constructor complexity
-        // Instead, verify the method calls the Stripe API with correct parameters
-        m::spy($mockInvoicesService)
-            ->shouldReceive('upcoming')
-            ->andReturn($this->equalTo([
-                'customer' => 'cus_test123',
-                'subscription_schedule' => 'sub_sched_test123',
-            ]));
-
-        $method->invoke($schedule);
+        $invoice = $method->invoke($schedule);
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function test_subscription_schedule_upcoming_invoice_preview_throws_for_inactive()
     {
         $schedule = $this->getMockBuilder(SubscriptionSchedule::class)
@@ -277,6 +284,17 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $result = $schedule->updatePhase(0, ['iterations' => 2]);
 
         $this->assertSame($schedule, $result);
+    }
+}
+
+class TestStripeInvoiceService {
+    public function __construct(
+        public $upcomingStripeInvoice
+    ) {}
+
+    public function upcoming($options) {
+        var_dump($options);
+        return $this->upcomingStripeInvoice;
     }
 }
 
