@@ -37,9 +37,19 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         $mockStripeInvoice->id = 'in_test123';
         $mockStripeInvoice->customer = 'cus_test123';
 
-        $mockInvoicesService->method('upcoming')->willReturn($mockStripeInvoice);
-        $mockStripeClient->invoices = $mockInvoicesService;
-        $mockOwner->method('stripe')->willReturn($mockStripeClient);
+        $mockInvoicesService = new class($mockStripeInvoice) {
+            public function __construct(protected $upcomingStripeInvoice) {}
+            public function upcoming() { return $this->upcomingStripeInvoice; }
+        };
+
+        $mockStripeClient = new class($mockInvoicesService) {
+            public function __construct(public $invoice) {}
+        };
+
+        $mockOwner = new class($mockStripeClient) {
+            public function __construct(protected $stripeClient) {}
+            public function stripe() { return $this->stripeClient; }
+        };
 
         // Set the owner
         $schedule->owner = $mockOwner;
