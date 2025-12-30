@@ -20,7 +20,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -33,7 +32,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getBillingModeForPayload');
-        $method->setAccessible(true);
 
         $this->assertNull($method->invoke($builder));
     }
@@ -48,12 +46,12 @@ class BillingModeTest extends TestCase
 
         // Test the effective billing mode without validation
         $method = $reflection->getMethod('getEffectiveBillingMode');
-        $method->setAccessible(true);
+
         $this->assertEquals('flexible', $method->invoke($builder));
 
         // Check that billing mode property is set correctly
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
+
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
 
@@ -68,7 +66,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -81,7 +78,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getBillingModeForPayload');
-        $method->setAccessible(true);
 
         $this->assertNull($method->invoke($builder));
     }
@@ -96,12 +92,12 @@ class BillingModeTest extends TestCase
 
         // Test the effective billing mode without validation
         $method = $reflection->getMethod('getEffectiveBillingMode');
-        $method->setAccessible(true);
+
         $this->assertEquals('flexible', $method->invoke($builder));
 
         // Check that billing mode property is set correctly
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
+
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
 
@@ -116,7 +112,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -132,7 +127,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -154,7 +148,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($subscription);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($subscription));
     }
@@ -173,7 +166,6 @@ class BillingModeTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($subscription);
         $method = $reflection->getMethod('getSwapOptions');
-        $method->setAccessible(true);
 
         $options = $method->invoke($subscription, collect([]));
 

@@ -19,7 +19,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -32,7 +31,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getBillingModeForPayload');
-        $method->setAccessible(true);
 
         $this->assertNull($method->invoke($builder));
     }
@@ -45,7 +43,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getEffectiveBillingMode');
-        $method->setAccessible(true);
 
         $this->assertEquals('flexible', $method->invoke($builder));
     }
@@ -61,7 +58,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('billingMode');
-        $property->setAccessible(true);
 
         $this->assertEquals(['type' => 'flexible'], $property->getValue($builder));
     }
@@ -77,7 +73,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('lineItems');
-        $property->setAccessible(true);
 
         $expected = [
             ['price' => 'price_test', 'quantity' => 2],
@@ -101,7 +96,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('lineItems');
-        $property->setAccessible(true);
 
         $this->assertEquals($lineItems, $property->getValue($builder));
     }
@@ -119,7 +113,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('metadata');
-        $property->setAccessible(true);
 
         $this->assertEquals($metadata, $property->getValue($builder));
     }
@@ -135,7 +128,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('description');
-        $property->setAccessible(true);
 
         $this->assertEquals('Test quote description', $property->getValue($builder));
     }
@@ -153,7 +145,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('expiresAt');
-        $property->setAccessible(true);
 
         $value = $property->getValue($builder);
         $this->assertInstanceOf(\Carbon\Carbon::class, $value);
@@ -173,7 +164,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('expiresAt');
-        $property->setAccessible(true);
 
         $value = $property->getValue($builder);
         $this->assertInstanceOf(\Carbon\Carbon::class, $value);
@@ -188,7 +178,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getLineItems');
-        $method->setAccessible(true);
 
         $result = $method->invoke($builder);
         $expected = [
@@ -212,7 +201,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($builder);
         $method = $reflection->getMethod('getLineItems');
-        $method->setAccessible(true);
 
         $result = $method->invoke($builder);
         $expected = [
@@ -234,7 +222,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('quoteNumber');
-        $property->setAccessible(true);
 
         $this->assertEquals('QT-2025-001', $property->getValue($builder));
     }
@@ -250,7 +237,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('header');
-        $property->setAccessible(true);
 
         $this->assertEquals('Custom quote header', $property->getValue($builder));
     }
@@ -266,7 +252,6 @@ class QuoteBuilderTest extends TestCase
         // Use reflection to access protected property
         $reflection = new \ReflectionClass($builder);
         $property = $reflection->getProperty('footer');
-        $property->setAccessible(true);
 
         $this->assertEquals('Custom quote footer', $property->getValue($builder));
     }
