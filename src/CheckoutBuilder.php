@@ -54,7 +54,6 @@ class CheckoutBuilder
                 $reflection = new \ReflectionClass($parentInstance);
                 if ($reflection->hasProperty('billingMode')) {
                     $property = $reflection->getProperty('billingMode');
-                    $property->setAccessible(true);
                     $billingMode = $property->getValue($parentInstance);
                     if ($billingMode !== null) {
                         $this->billingMode = $billingMode;
