@@ -196,7 +196,8 @@ class QuoteTest extends TestCase
 
     public function test_quote_find_by_number()
     {
-        $mockOwner = new class() {
+        $mockOwner = new class()
+        {
             public $quotes;
         };
 

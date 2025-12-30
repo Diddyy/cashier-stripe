@@ -43,14 +43,25 @@ class SubscriptionScheduleAdvancedTest extends TestCase
         // Mock the owner with Stripe client
         $mockInvoicesService = m::mock(TestStripeInvoiceService::class, [$mockStripeInvoice]);
 
-        $mockStripeClient = new class($mockInvoicesService) {
-            public function __construct(public $invoices) {}
+        $mockStripeClient = new class($mockInvoicesService)
+        {
+            public function __construct(public $invoices)
+            {
+            }
         };
 
-        $mockOwner = new class($mockStripeClient) {
+        $mockOwner = new class($mockStripeClient)
+        {
             public $stripe_id;
-            public function __construct(protected $stripeClient) {}
-            public function stripe() { return $this->stripeClient; }
+
+            public function __construct(protected $stripeClient)
+            {
+            }
+
+            public function stripe()
+            {
+                return $this->stripeClient;
+            }
         };
 
         // Set the owner
@@ -287,13 +298,17 @@ class SubscriptionScheduleAdvancedTest extends TestCase
     }
 }
 
-class TestStripeInvoiceService {
+class TestStripeInvoiceService
+{
     public function __construct(
         public $upcomingStripeInvoice
-    ) {}
+    ) {
+    }
 
-    public function upcoming($options) {
+    public function upcoming($options)
+    {
         var_dump($options);
+
         return $this->upcomingStripeInvoice;
     }
 }
