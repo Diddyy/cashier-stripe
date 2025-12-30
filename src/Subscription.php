@@ -549,6 +549,12 @@ class Subscription extends Model
             'quantity' => $stripeSubscription->quantity,
         ])->save();
 
+        $singleSubscriptionItem = $this->items()->firstOrFail();
+
+        $singleSubscriptionItem->fill([
+            'quantity' => $stripeSubscription->quantity,
+        ])->save();
+
         $this->handlePaymentFailure($this);
 
         return $this;

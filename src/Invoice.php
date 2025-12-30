@@ -5,6 +5,7 @@ namespace Laravel\Cashier;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DateTimeZone;
+use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Eloquent\Model;
@@ -32,9 +33,9 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     /**
      * The taxes applied to the invoice.
      *
-     * @var \Laravel\Cashier\Tax[]
+     * @var \Laravel\Cashier\Tax[]|null
      */
-    protected array $taxes = [];
+    protected ?array $taxes = null;
 
     /**
      * The payments associated with the invoice.
@@ -426,7 +427,21 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      */
     protected function getTaxRate($taxRateDetails): ?StripeTaxRate
     {
-        return $taxRateDetails->tax_rate instanceof StripeTaxRate ? $taxRateDetails->tax_rate : null;
+        // If tax_rate is already expanded as an object, return it...
+        if ($taxRateDetails->tax_rate instanceof StripeTaxRate) {
+            return $taxRateDetails->tax_rate;
+        }
+
+        // If tax_rate is just an ID string, fetch it from Stripe...
+        if (isset($taxRateDetails->tax_rate) && is_string($taxRateDetails->tax_rate)) {
+            try {
+                return $this->owner->stripe()->taxRates->retrieve($taxRateDetails->tax_rate);
+            } catch (Exception $e) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /**

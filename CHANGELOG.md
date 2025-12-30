@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.0.1...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.1.0...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,35 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.1.0](https://github.com/laravel/cashier/compare/v16.0.6...v16.1.0) - 2025-12-03
+
+* [16.x] refactor: allow null coupon and promotion code IDs by [@nguyentranchung](https://github.com/nguyentranchung) in https://github.com/laravel/cashier-stripe/pull/1808
+
+## [v16.0.6](https://github.com/laravel/cashier/compare/v16.0.5...v16.0.6) - 2025-11-25
+
+* [16.x] Update `SubscriptionItem` quantity of a Single Price subscription. by [@Junveloper](https://github.com/Junveloper) in https://github.com/laravel/cashier-stripe/pull/1803
+* [16.x] PHP 8.5 Compatibility by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1804
+
+## [v16.0.5](https://github.com/laravel/cashier/compare/v16.0.4...v16.0.5) - 2025-11-12
+
+* Fix method call to use property access for subscriptions by [@larskoole](https://github.com/larskoole) in https://github.com/laravel/cashier-stripe/pull/1802
+
+## [v16.0.4](https://github.com/laravel/cashier/compare/v16.0.3...v16.0.4) - 2025-11-04
+
+* Add workbench to export-ignore in .gitattributes by [@stevebauman](https://github.com/stevebauman) in https://github.com/laravel/cashier-stripe/pull/1792
+* [16.x] Fix taxes with stripe sdk 17 by [@matthieumota](https://github.com/matthieumota) in https://github.com/laravel/cashier-stripe/pull/1793
+* Fix invoice() exception handling by [@josiasmontag](https://github.com/josiasmontag) in https://github.com/laravel/cashier-stripe/pull/1795
+
+## [v16.0.3](https://github.com/laravel/cashier/compare/v16.0.2...v16.0.3) - 2025-10-21
+
+* Update `WebhookController::handleCustomerSubscriptionUpdated()` return type and add tests to verify usage by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/cashier-stripe/pull/1786
+* [16.x] Taxes on invoice need to be null by [@matthieumota](https://github.com/matthieumota) in https://github.com/laravel/cashier-stripe/pull/1788
+
+## [v16.0.2](https://github.com/laravel/cashier/compare/v16.0.1...v16.0.2) - 2025-10-09
+
+* Fix upcomingInvoice method type declaration violation by [@jamguoxiaoqi](https://github.com/jamguoxiaoqi) in https://github.com/laravel/cashier-stripe/pull/1782
+* Remove ray() function call by [@Luoti](https://github.com/Luoti) in https://github.com/laravel/cashier-stripe/pull/1784
 
 ## [v16.0.1](https://github.com/laravel/cashier/compare/v16.0.0...v16.0.1) - 2025-09-25
 

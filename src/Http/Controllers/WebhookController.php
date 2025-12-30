@@ -128,7 +128,7 @@ class WebhookController extends Controller
      * Handle customer subscription updated.
      *
      * @param  array  $payload
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return \Symfony\Component\HttpFoundation\Response|null
      */
     protected function handleCustomerSubscriptionUpdated(array $payload)
     {
@@ -144,7 +144,7 @@ class WebhookController extends Controller
                 $subscription->items()->delete();
                 $subscription->delete();
 
-                return;
+                return null;
             }
 
             $subscription->type = $subscription->type ?? $data['metadata']['type'] ?? $data['metadata']['name'] ?? $this->newSubscriptionType($payload);

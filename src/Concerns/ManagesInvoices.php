@@ -152,7 +152,7 @@ trait ManagesInvoices
             return $invoice->chargesAutomatically() ? $invoice->pay($payOptions) : $invoice->send();
         } catch (StripeCardException $exception) {
             // Get the latest payment from the invoice payments...
-            $stripeInvoice = $invoice->asStripeInvoice()->refresh(['expand' => ['payments']]);
+            $stripeInvoice = $invoice->refresh(['payments'])->asStripeInvoice();
 
             $invoicePayments = $stripeInvoice->payments->data;
 
@@ -237,7 +237,7 @@ trait ManagesInvoices
 
             return new Invoice($this, $stripeInvoice, $parameters);
         } catch (StripeInvalidRequestException $exception) {
-            //
+            return null;
         }
     }
 
