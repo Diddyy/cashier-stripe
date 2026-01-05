@@ -4,6 +4,7 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 use Laravel\Cashier\Concerns\InteractsWithStripe;
 use Stripe\SubscriptionSchedule as StripeSubscriptionSchedule;
 
@@ -275,7 +276,7 @@ class SubscriptionSchedule extends Model
     public function upcomingInvoicePreview(array $options = [])
     {
         if (! $this->active() && ! $this->notStarted()) {
-            throw new \InvalidArgumentException('Cannot preview invoices for inactive subscription schedules.');
+            throw new InvalidArgumentException('Cannot preview invoices for inactive subscription schedules.');
         }
 
         $stripeInvoice = $this->owner->stripe()->invoices->upcoming(
@@ -319,7 +320,7 @@ class SubscriptionSchedule extends Model
         $schedule = $this->asStripeSubscriptionSchedule(['phases']);
 
         if (! isset($schedule->phases[$phaseIndex])) {
-            throw new \InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
+            throw new InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
         }
 
         $phase = $schedule->phases[$phaseIndex];
@@ -401,7 +402,7 @@ class SubscriptionSchedule extends Model
         $phases = $schedule->phases->data ?? [];
 
         if (! isset($phases[$phaseIndex])) {
-            throw new \InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
+            throw new InvalidArgumentException("Phase index {$phaseIndex} does not exist on this schedule.");
         }
 
         // Update the specific phase
