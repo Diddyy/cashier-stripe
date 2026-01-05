@@ -3,6 +3,7 @@
 namespace Laravel\Cashier;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Laravel\Cashier\Concerns\AllowsCoupons;
 use Laravel\Cashier\Concerns\HandlesTaxes;
 
@@ -142,7 +143,7 @@ class CheckoutBuilder
         $apiVersion = config('cashier.stripe.api_version') ?? \Stripe\Stripe::getApiVersion();
 
         if ($apiVersion && version_compare($apiVersion, '2025-06-30', '<')) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Flexible billing mode requires Stripe API version 2025-06-30.basil or later. '.
                 'Current version: '.$apiVersion.'. Please update your API version.'
             );
