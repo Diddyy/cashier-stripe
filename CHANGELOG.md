@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.2.0...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.3.0...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,10 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.3.0](https://github.com/laravel/cashier/compare/v16.2.0...v16.3.0) - 2026-02-21
+
+* Avoids Stripe error removing metered price from flex sub by [@Arkitecht](https://github.com/Arkitecht) in https://github.com/laravel/cashier-stripe/pull/1820
 
 ## [v16.2.0](https://github.com/laravel/cashier/compare/v16.1.0...v16.2.0) - 2026-01-06
 
