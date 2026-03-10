@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.3.0...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.4.0...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,11 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.4.0](https://github.com/laravel/cashier/compare/v16.3.0...v16.4.0) - 2026-03-10
+
+* Only use clear_usage when billing mode is not flexible by [@vrymel](https://github.com/vrymel) in https://github.com/laravel/cashier-stripe/pull/1823
+* Add cashier-stripe-development Boost skill by [@pushpak1300](https://github.com/pushpak1300) in https://github.com/laravel/cashier-stripe/pull/1825
 
 ## [v16.3.0](https://github.com/laravel/cashier/compare/v16.2.0...v16.3.0) - 2026-02-21
 
