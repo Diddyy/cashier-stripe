@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.4.0...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.5.0...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,11 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.5.0](https://github.com/laravel/cashier/compare/v16.4.0...v16.5.0) - 2026-03-17
+
+* Fix: Add support for Stripe Source in fillSourceDetails by [@colinmac17](https://github.com/colinmac17) in https://github.com/laravel/cashier-stripe/pull/1827
+* Laravel 13.x Compatibility by [@laravel-shift](https://github.com/laravel-shift) in https://github.com/laravel/cashier-stripe/pull/1828
 
 ## [v16.4.0](https://github.com/laravel/cashier/compare/v16.3.0...v16.4.0) - 2026-03-10
 
