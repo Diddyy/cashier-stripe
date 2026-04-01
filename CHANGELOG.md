@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.5.0...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.5.1...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,11 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.5.1](https://github.com/laravel/cashier/compare/v16.5.0...v16.5.1) - 2026-04-01
+
+* Remove redundant "When to Apply" section from skill body by [@pushpak1300](https://github.com/pushpak1300) in https://github.com/laravel/cashier-stripe/pull/1829
+* Update Symfony deps versions to support v8 by [@HichemTab-tech](https://github.com/HichemTab-tech) in https://github.com/laravel/cashier-stripe/pull/1833
 
 ## [v16.5.0](https://github.com/laravel/cashier/compare/v16.4.0...v16.5.0) - 2026-03-17
 
