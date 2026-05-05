@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v16.5.1...16.x)
+## [Unreleased](https://github.com/laravel/cashier/compare/v16.5.3...16.x)
 
 ## [v15.7.1](https://github.com/laravel/cashier/compare/v15.7.0...v15.7.1) - 2025-07-22
 
@@ -9,6 +9,10 @@
 ## [v15.7.0](https://github.com/laravel/cashier/compare/v15.6.4...v15.7.0) - 2025-06-10
 
 * [15.x] feat: allowing dompdf 3.0 by [@mathiasgrimm](https://github.com/mathiasgrimm) in https://github.com/laravel/cashier-stripe/pull/1763
+
+## [v16.5.3](https://github.com/laravel/cashier/compare/v16.5.1...v16.5.3) - 2026-05-05
+
+* fix: correctly calculate unit amount excluding tax based on tax behavior by [@briankiewel](https://github.com/briankiewel) in https://github.com/laravel/cashier-stripe/pull/1840
 
 ## [v16.5.1](https://github.com/laravel/cashier/compare/v16.5.0...v16.5.1) - 2026-04-01
 
