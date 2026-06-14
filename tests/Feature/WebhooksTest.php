@@ -144,6 +144,50 @@ class WebhooksTest extends FeatureTestCase
         ]);
     }
 
+    public function test_subscription_trial_ends_at_is_cleared_when_trial_ends()
+    {
+        $user = $this->createCustomer('subscription_trial_ends_at_is_cleared', ['stripe_id' => 'cus_foo']);
+
+        $subscription = $user->subscriptions()->create([
+            'type' => 'main',
+            'stripe_id' => 'sub_foo',
+            'stripe_price' => 'price_foo',
+            'stripe_status' => StripeSubscription::STATUS_ACTIVE,
+            'trial_ends_at' => now()->addDays(5),
+        ]);
+
+        $subscription->items()->create([
+            'stripe_id' => 'it_'.Str::random(10),
+            'stripe_product' => 'prod_bar',
+            'stripe_price' => 'price_foo',
+            'quantity' => 1,
+        ]);
+
+        // Stripe sends "trial_end": null once a trial has ended...
+        $this->postJson('stripe/webhook', [
+            'id' => 'foo',
+            'type' => 'customer.subscription.updated',
+            'data' => [
+                'object' => [
+                    'id' => $subscription->stripe_id,
+                    'customer' => 'cus_foo',
+                    'cancel_at_period_end' => false,
+                    'status' => StripeSubscription::STATUS_ACTIVE,
+                    'trial_end' => null,
+                    'items' => [
+                        'data' => [[
+                            'id' => 'bar',
+                            'price' => ['id' => 'price_foo', 'product' => 'prod_bar'],
+                            'quantity' => 1,
+                        ]],
+                    ],
+                ],
+            ],
+        ])->assertOk();
+
+        $this->assertNull($subscription->refresh()->trial_ends_at);
+    }
+
     public function test_subscriptions_on_update_cancel_at_date_is_correct()
     {
         $user = $this->createCustomer('subscriptions_on_update_cancel_at_date_is_correct', ['stripe_id' => 'cus_foo']);

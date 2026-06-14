@@ -164,6 +164,8 @@ class WebhookController extends Controller
                 if (! $subscription->trial_ends_at || $subscription->trial_ends_at->ne($trialEnd)) {
                     $subscription->trial_ends_at = $trialEnd;
                 }
+            } else {
+                $subscription->trial_ends_at = null;
             }
 
             // Cancellation date...
